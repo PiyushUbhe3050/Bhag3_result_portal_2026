@@ -1,31 +1,57 @@
 ﻿{% load static %}
 <!DOCTYPE html>
-<html lang="en">
+<html lang="mr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Official Exam Result Portal</title>
+    <title>‘स्व‘-रूपवर्धिनी - परीक्षा निकाल पोर्टल</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Devanagari:wght@400;600;700;800&display=swap" rel="stylesheet">
     <style>
         :root {
-            --brand-primary: #0f766e;      /* Primary NGO Theme Color */
-            --brand-secondary: #0d9488;    /* Accent Shade */
-            --brand-dark: #134e4a;
+            --brand-primary: #dc2626;  /* Logo matching vibrant red */
+            --brand-dark: #991b1b;
+            --brand-light: #fffbeb;
+        }
+        body {
+            font-family: 'Noto Sans Devanagari', sans-serif;
+            background-color: #fdfbf7;
         }
         .btn-brand {
             background-color: var(--brand-primary);
             color: #ffffff;
             border: none;
+            transition: all 0.2s ease-in-out;
         }
         .btn-brand:hover {
             background-color: var(--brand-dark);
             color: #ffffff;
+            transform: translateY(-1px);
         }
         .text-brand { color: var(--brand-primary) !important; }
-        .bg-brand { background-color: var(--brand-primary) !important; }
-        
-        .report-header {
-            border-bottom: 2px solid var(--brand-primary);
+        .bg-brand-light { background-color: var(--brand-light); }
+        .report-header { border-bottom: 2px solid var(--brand-primary); }
+
+        /* अधिकृत संस्था इमेज बॅनर */
+        .org-header-banner {
+            max-height: 120px;
+            width: auto;
+            object-fit: contain;
+        }
+
+        /* मोकळी आणि ठळक शीर्षके */
+        .campaign-title-badge {
+            font-size: 1.25rem !important;
+            font-weight: 700;
+            padding: 10px 24px !important;
+            display: inline-block;
+            line-height: 1.5;
+        }
+        .exam-sub-title {
+            font-size: 1.25rem !important;
+            font-weight: 700;
+            color: #1f2937;
+            margin-top: 8px;
         }
 
         @media print {
@@ -35,82 +61,107 @@
         }
     </style>
 </head>
-<body class="bg-light py-4">
-<div class="container" style="max-width: 800px;">
+<body class="py-4">
+<div class="container" style="max-width: 840px;">
 
-    <!-- Public NGO Header -->
+    <!-- अधिकृत संस्था बॅनर आणि मोहीम शीर्षके -->
     <div class="text-center mb-4 no-print">
-        <div class="d-flex justify-content-center align-items-center gap-3 mb-2">
-            <img src="{% static 'results/ngo_logo.png' %}" alt="Logo" class="img-fluid" style="max-height: 65px;" onerror="this.style.display='none'">
-            <h2 class="fw-bold text-brand m-0">BHAG-3 EDUCATIONAL FOUNDATION</h2>
+        <div class="mb-3">
+            <img src="{% static 'results/swaroop_header.png' %}" alt="‘स्व‘-रूपवर्धिनी" class="img-fluid org-header-banner">
         </div>
-        <p class="text-muted">Online Examination Assessment & Student Marksheet Verification</p>
+
+        <div>
+            <span class="badge bg-warning text-dark campaign-title-badge rounded-pill shadow-sm">
+                भाग - ३ - वार्षिक/ सहामाही परीक्षा गुणवत्ता वाढ अभियान
+            </span>
+        </div>
+
+        <div class="exam-sub-title">
+            सहामाही परीक्षा - आत्मपरीक्षण व उद्दिष्ट निश्चिती
+        </div>
     </div>
 
-    <!-- Search Form -->
-    <div class="card shadow-sm border-0 p-4 mb-4 no-print rounded-3">
+    <!-- सर्च फॉर्म -->
+    <div class="card shadow-sm border-0 p-4 mb-4 no-print rounded-4 bg-white border-top border-4 border-warning">
+        <h4 class="fw-bold text-center text-dark mb-4">परीक्षेचा निकाल शोधा</h4>
         <form method="POST">
             {% csrf_token %}
             <div class="row g-3">
-                <div class="col-md-6">
-                    <label class="form-label fw-semibold">Student Roll Number</label>
-                    <input type="text" name="roll_number" class="form-control form-control-lg" placeholder="e.g. 101" required>
+                <div class="col-12">
+                    <label class="form-label fw-bold fs-5">शाखा नाव <span class="text-danger">*</span></label>
+                    <select name="branch_group" class="form-select form-select-lg" required>
+                        <option value="" disabled selected>-- तुमची शाखा निवडा --</option>
+                        {% for b in branches %}
+                        <option value="{{ b.id }}">{{ b.name }}</option>
+                        {% endfor %}
+                    </select>
                 </div>
                 <div class="col-md-6">
-                    <label class="form-label fw-semibold">Student Name</label>
-                    <input type="text" name="name" class="form-control form-control-lg" placeholder="e.g. Rahul Sharma" required>
+                    <label class="form-label fw-bold fs-5">Roll number <span class="text-danger">*</span></label>
+                    <input type="text" name="roll_number" class="form-control form-control-lg" placeholder="उदा. 101" required>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label fw-bold fs-5">वर्धक नाव <span class="text-danger">*</span></label>
+                    <input type="text" name="name" class="form-control form-control-lg" placeholder="उदा. राहुल शर्मा" required>
                 </div>
                 <div class="col-12 mt-4">
-                    <button type="submit" class="btn btn-brand w-100 py-2 fs-5 fw-semibold shadow-sm">Search Result</button>
+                    <button type="submit" class="btn btn-brand w-100 py-3 fs-5 fw-bold shadow-sm rounded-3">
+                        निकाल पहा (Fetch Result)
+                    </button>
                 </div>
             </div>
         </form>
     </div>
 
     {% if error %}
-    <div class="alert alert-danger shadow-sm no-print">{{ error }}</div>
+    <div class="alert alert-danger shadow-sm no-print rounded-3 text-center fw-semibold fs-5">
+        {{ error }}
+    </div>
     {% endif %}
 
     {% if student %}
-    <!-- Official Marksheet Card -->
-    <div class="card shadow border-0 p-4 p-md-5 bg-white rounded-3">
+    <!-- गुणपत्रिका (Marksheet) -->
+    <div class="card shadow border-0 p-4 p-md-5 bg-white rounded-4 border-top border-5 border-danger">
         <div class="report-header pb-3 mb-4 text-center">
-            <h4 class="fw-bold text-brand mb-1">BHAG-3 EDUCATIONAL FOUNDATION</h4>
-            <div class="text-muted small">ANNUAL ACADEMIC PROGRESS REPORT - 2026</div>
+            <div class="mb-2">
+                <img src="{% static 'results/swaroop_header.png' %}" alt="‘स्व‘-रूपवर्धिनी" class="img-fluid" style="max-height: 70px;">
+            </div>
+            <div class="fw-bold text-dark fs-5">भाग - ३ - वार्षिक/ सहामाही परीक्षा गुणवत्ता वाढ अभियान</div>
+            <div class="fw-semibold text-muted">सहामाही परीक्षा - आत्मपरीक्षण व उद्दिष्ट निश्चिती</div>
         </div>
 
         <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
             <div>
-                <h5 class="fw-bold mb-1 text-dark">{{ student.name }}</h5>
-                <span class="text-muted">Roll No: <strong class="text-dark">{{ student.roll_number }}</strong></span> | 
-                <span class="text-muted">Batch: <strong class="text-dark">{{ student.batch }}</strong></span>
+                <h4 class="fw-bold mb-1 text-dark">वर्धक नाव: <span class="text-brand">{{ student.name }}</span></h4>
+                <span class="text-muted fs-6">शाखा: <strong class="text-dark">{{ student.branch_group.name }}</strong></span> | 
+                <span class="text-muted fs-6">Roll Number: <strong class="text-dark">{{ student.roll_number }}</strong></span>
             </div>
-            <button onclick="window.print()" class="btn btn-outline-secondary btn-sm no-print">Download / Print Marksheet</button>
+            <button onclick="window.print()" class="btn btn-outline-dark btn-sm no-print fw-semibold">🖨️ गुणपत्रिका प्रिंट / सेव्ह करा</button>
         </div>
 
         <div class="table-responsive">
             <table class="table table-bordered text-center align-middle">
                 <thead class="table-light">
                     <tr>
-                        <th class="text-start ps-3">Subject</th>
-                        <th>Max Marks</th>
-                        <th>Pass Marks</th>
-                        <th>Marks Obtained</th>
-                        <th>Result</th>
+                        <th class="text-start ps-3">विषय (Subject)</th>
+                        <th>एकूण गुण</th>
+                        <th>उत्तीर्ण गुण</th>
+                        <th>मिळालेले गुण</th>
+                        <th>निकाल</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for score in scores %}
                     <tr>
-                        <td class="text-start ps-3 fw-medium">{{ score.subject.name }}</td>
+                        <td class="text-start ps-3 fw-semibold">{{ score.subject.name }}</td>
                         <td>{{ score.subject.max_marks }}</td>
                         <td>{{ score.subject.passing_marks }}</td>
-                        <td class="fw-bold">{{ score.marks_obtained }}</td>
+                        <td class="fw-bold fs-5">{{ score.marks_obtained }}</td>
                         <td>
                             {% if score.is_passed %}
-                            <span class="badge bg-success">PASS</span>
+                            <span class="badge bg-success px-3 py-2 fs-6">उत्तीर्ण</span>
                             {% else %}
-                            <span class="badge bg-danger">FAIL</span>
+                            <span class="badge bg-danger px-3 py-2 fs-6">मार्गदर्शन आवश्यक</span>
                             {% endif %}
                         </td>
                     </tr>
@@ -121,31 +172,31 @@
 
         <div class="row text-center mt-3 g-2">
             <div class="col-4">
-                <div class="border rounded p-2 bg-light">
-                    <div class="text-muted small">Total Score</div>
-                    <div class="h5 fw-bold mb-0 text-dark">{{ student.total_marks_obtained }} / {{ student.total_max_marks }}</div>
+                <div class="border rounded-3 p-3 bg-brand-light">
+                    <div class="text-muted small fw-bold">एकूण गुण</div>
+                    <div class="h4 fw-bold mb-0 text-dark">{{ student.total_marks_obtained }} / {{ student.total_max_marks }}</div>
                 </div>
             </div>
             <div class="col-4">
-                <div class="border rounded p-2 bg-light">
-                    <div class="text-muted small">Percentage</div>
-                    <div class="h5 fw-bold mb-0 text-dark">{{ student.percentage }}%</div>
+                <div class="border rounded-3 p-3 bg-brand-light">
+                    <div class="text-muted small fw-bold">टक्केवारी</div>
+                    <div class="h4 fw-bold mb-0 text-dark">{{ student.percentage }}%</div>
                 </div>
             </div>
             <div class="col-4">
-                <div class="border rounded p-2 bg-light">
-                    <div class="text-muted small">Overall Status</div>
+                <div class="border rounded-3 p-3 bg-brand-light">
+                    <div class="text-muted small fw-bold">अंतिम निकाल</div>
                     {% if student.is_passed %}
-                    <div class="h5 fw-bold text-success mb-0">PASSED</div>
+                    <div class="h4 fw-bold text-success mb-0">यशस्वी / उत्तीर्ण</div>
                     {% else %}
-                    <div class="h5 fw-bold text-danger mb-0">REMEDIAL REQUIRED</div>
+                    <div class="h4 fw-bold text-danger mb-0">पुनःप्रयत्न आवश्यक</div>
                     {% endif %}
                 </div>
             </div>
         </div>
         
         <div class="text-center mt-4 pt-3 border-top text-muted small">
-            This is a computer-generated grade card issued for NGO evaluation purposes.
+            ही अधिकृत संगणकीकृत गुणपत्रिका असून ‘स्व‘-रूपवर्धिनी अंतर्गत आत्मपरीक्षणासाठी वितरीत केली आहे.
         </div>
     </div>
     {% endif %}
