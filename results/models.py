@@ -57,6 +57,23 @@ class Student(models.Model):
         return 0.0
 
     @property
+    def overall_grade(self):
+        pct = self.percentage
+        if not self.is_passed:
+            return "F"
+        if pct >= 85:
+            return "A+"
+        elif pct >= 70:
+            return "A"
+        elif pct >= 60:
+            return "B+"
+        elif pct >= 50:
+            return "B"
+        elif pct >= 35:
+            return "C"
+        return "D"
+
+    @property
     def is_passed(self):
         scores = self.scores.all()
         if not scores.exists():
@@ -88,6 +105,23 @@ class Score(models.Model):
     @property
     def is_passed(self):
         return self.marks_obtained >= self.subject.passing_marks
+
+    @property
+    def grade(self):
+        if not self.is_passed:
+            return "F"
+        pct = (self.marks_obtained / self.subject.max_marks) * 100 if self.subject.max_marks > 0 else 0
+        if pct >= 85:
+            return "A+"
+        elif pct >= 70:
+            return "A"
+        elif pct >= 60:
+            return "B+"
+        elif pct >= 50:
+            return "B"
+        elif pct >= 35:
+            return "C"
+        return "D"
 
     def __str__(self):
         return f"{self.student.name} - {self.subject.name}: {self.marks_obtained}"

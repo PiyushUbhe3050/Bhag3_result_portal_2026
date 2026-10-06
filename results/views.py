@@ -1,4 +1,4 @@
-﻿from django.shortcuts import render
+﻿from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.admin.views.decorators import staff_member_required
 from django.db.models import Avg
 from .models import BranchGroup, Student, Score
@@ -6,8 +6,6 @@ from .models import BranchGroup, Student, Score
 def search_result(request):
     branches = BranchGroup.objects.all().order_by('name')
     error = None
-    student = None
-    scores = []
 
     if request.method == "POST":
         branch_id = request.POST.get("branch_group", "").strip()
@@ -20,16 +18,31 @@ def search_result(request):
                 roll_number__iexact=roll_number,
                 name__icontains=name
             )
-            scores = student.scores.select_related('subject').all()
+            # Redirect to the dedicated report card page
+            return redirect('view_report_card', student_id=student.id)
         except Student.DoesNotExist:
-            error = "No student found matching this Group, Roll Number, and Name combination."
+            error = "दिलेल्या शाखा, Roll Number आणि नावाची कोणतीही नोंद आढळली नाही. कृपया योग्य माहिती तपासा."
 
     return render(request, "results/search.html", {
         "branches": branches,
-        "student": student,
-        "scores": scores,
         "error": error
     })
+
+def view_report_card(request, student_id):
+    student = get_object_or_404(Student.objects.select_related('branch_group'), id=student_id)
+    scores = student.scores.select_related('subject').all()
+    
+    # Check if student is in high distinction, pass, or needs attention
+    pct = student.percentage
+    is_passed = student.is_passed
+
+    context = {
+        "student": student,
+        "scores": scores,
+        "is_passed": is_passed,
+        "percentage": pct,
+    }
+    return render(request, "results/report_card.html", context)
 
 @staff_member_required
 def admin_analytics(request):
