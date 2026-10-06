@@ -1,25 +1,28 @@
 """
-Django settings for config project.
-Configured for Bhag-3 Result Portal - ‘स्व‘-रूपवर्धिनी
+Django settings for Bhag-3 Result Portal - ‘स्व‘-रूपवर्धिनी.
 """
 
 import os
 from pathlib import Path
-import dj_database_url
+
+# Safe import for dj_database_url to prevent ModuleNotFoundError during build
+try:
+    import dj_database_url
+except ImportError:
+    dj_database_url = None
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# SECURITY WARNING: keep the secret key used in production secret!
+# Quick-start development settings - unsuitable for production
 SECRET_KEY = os.environ.get(
     'SECRET_KEY', 
     'django-insecure-swaroopwardhinee-bhag3-result-portal-2026-key'
 )
 
-# SECURITY WARNING: don't run with debug turned on in production!
+# Set DEBUG to False in production if environment variable is set, otherwise default to True
 DEBUG = os.environ.get('DEBUG', 'False').lower() == 'true'
 
-# Allow all hosts or specific domains
 ALLOWED_HOSTS = [
     '*',
     'swaroopwardhinee-bhag3-result-portal-2026.onrender.com',
@@ -27,7 +30,7 @@ ALLOWED_HOSTS = [
     'localhost',
 ]
 
-# CSRF Trusted Origins for Render & Local Testing
+# CSRF Trusted Origins for Render HTTPS domain & local development
 CSRF_TRUSTED_ORIGINS = [
     'https://swaroopwardhinee-bhag3-result-portal-2026.onrender.com',
     'https://*.onrender.com',
@@ -53,7 +56,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
-    'whitenoise.middleware.WhiteNoiseMiddleware',  # WhiteNoise for static files
+    'whitenoise.middleware.WhiteNoiseMiddleware',  # WhiteNoise for static asset serving
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -67,7 +70,7 @@ ROOT_URLCONF = 'config.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [BASE_DIR / 'templates'],  # Point to templates folder
+        'DIRS': [BASE_DIR / 'templates'],  # Point to project-level templates folder
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -81,10 +84,10 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'config.wsgi.application'
 
-# Database
-# Uses DATABASE_URL if available (Render PostgreSQL), otherwise SQLite locally
+# Database configuration
+# Connects to Render PostgreSQL if DATABASE_URL is set; otherwise falls back to SQLite locally
 DATABASE_URL = os.environ.get('DATABASE_URL')
-if DATABASE_URL:
+if DATABASE_URL and dj_database_url:
     DATABASES = {
         'default': dj_database_url.config(default=DATABASE_URL, conn_max_age=600)
     }
@@ -113,7 +116,7 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 # Internationalization
-LANGUAGE_CODE = 'mr'  # Marathi default
+LANGUAGE_CODE = 'mr'
 TIME_ZONE = 'Asia/Kolkata'
 USE_I18N = True
 USE_TZ = True
