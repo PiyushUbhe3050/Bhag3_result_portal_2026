@@ -1,0 +1,96 @@
+{% extends "admin/base_site.html" %}
+{% load static %}
+
+{% block content %}
+<style>
+    .upload-card {
+        background: #ffffff;
+        border-radius: 12px;
+        border: 1px solid #e2e8f0;
+        padding: 30px;
+        max-width: 750px;
+        margin: 20px auto;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+    }
+    .form-group {
+        margin-bottom: 20px;
+    }
+    .form-label {
+        display: block;
+        font-weight: 700;
+        margin-bottom: 8px;
+        color: #1e293b;
+    }
+    .form-control {
+        width: 100%;
+        padding: 10px 14px;
+        border-radius: 8px;
+        border: 1px solid #cbd5e1;
+        font-size: 1rem;
+        box-sizing: border-box;
+    }
+    .btn-submit {
+        background: #9a3412;
+        color: #ffffff;
+        font-weight: 700;
+        border: none;
+        padding: 12px 24px;
+        border-radius: 8px;
+        cursor: pointer;
+        width: 100%;
+        font-size: 1.05rem;
+    }
+    .btn-submit:hover {
+        background: #7c2d12;
+    }
+    .hint-box {
+        background: #fffbeb;
+        border-left: 4px solid #f59e0b;
+        padding: 15px;
+        border-radius: 6px;
+        margin-bottom: 25px;
+        font-size: 0.92rem;
+        color: #92400e;
+    }
+</style>
+
+<div class="upload-card">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 2px solid #f1f5f9; padding-bottom: 12px;">
+        <h2 style="margin: 0; font-weight: 800; color: #0f172a;">📊 एक्सेल / CSV द्वारे एकत्रित विद्यार्थी नोंद (Bulk Upload)</h2>
+        <a href="{% url 'download_sample_csv' %}" class="button" style="background: #0284c7 !important; text-decoration: none;">
+            📥 सॅम्पल CSV डाऊनलोड करा
+        </a>
+    </div>
+
+    <div class="hint-box">
+        <strong>📋 सूचना:</strong><br>
+        १. वरील <strong>'सॅम्पल CSV डाऊनलोड करा'</strong> बटणावर क्लिक करून तयार फॉरमॅट फाईल मिळवा.<br>
+        २. फाईलमध्ये <code>roll_number</code>, <code>name</code> आणि विषयांचे कॉलम भरा.<br>
+        ३. एकाच वेळी १००+ विद्यार्थ्यांचे गुण काही सेकंदात अपलोड होतील.
+    </div>
+
+    <form method="POST" enctype="multipart/form-data">
+        {% csrf_token %}
+
+        <div class="form-group">
+            <label class="form-label">१. शाखा निवडा (Select Shakha) *</label>
+            <select name="branch_group" class="form-control" required>
+                {% for b in branches %}
+                    <option value="{{ b.id }}">{{ b.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label class="form-label">२. एक्सेल किंवा CSV फाईल निवडा (.xlsx / .csv) *</label>
+            <input type="file" name="file" class="form-control" accept=".xlsx, .xls, .csv" required>
+        </div>
+
+        <div style="margin-top: 30px;">
+            <button type="submit" class="btn-submit">
+                🚀 फाईल अपलोड करून डेटा सेव्ह करा
+            </button>
+        </div>
+    </form>
+</div>
+{% endblock %}

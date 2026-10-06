@@ -9,7 +9,6 @@
         gap: 25px;
     }
 
-    /* Role Badge */
     .role-banner {
         display: flex;
         justify-content: space-between;
@@ -31,7 +30,6 @@
     .badge-super { background: #fee2e2; color: #991b1b; }
     .badge-coadmin { background: #fef3c7; color: #92400e; }
 
-    /* Action Cards Grid */
     .portal-grid {
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
@@ -77,26 +75,26 @@
 
     .card-btn-group {
         display: flex;
-        gap: 10px;
-        justify-content: center;
+        flex-direction: column;
+        gap: 8px;
     }
 
     .btn-action {
-        flex: 1;
         padding: 10px 14px;
         font-size: 0.92rem;
         font-weight: 700;
         border-radius: 8px;
         text-decoration: none;
-        display: inline-block;
+        display: block;
         transition: 0.15s ease;
     }
     .btn-add { background: #9a3412; color: #ffffff !important; }
     .btn-add:hover { background: #7c2d12; }
+    .btn-upload { background: #0284c7; color: #ffffff !important; }
+    .btn-upload:hover { background: #0369a1; }
     .btn-view { background: #f1f5f9; color: #334155 !important; border: 1px solid #cbd5e1; }
     .btn-view:hover { background: #e2e8f0; }
 
-    /* Super-Admin Audit Log Section */
     .audit-section {
         background: #ffffff;
         border-radius: 14px;
@@ -155,7 +153,6 @@
 
 <div class="dashboard-container">
 
-    <!-- Top Role Header -->
     <div class="role-banner">
         <div>
             <h3 style="margin: 0; font-weight: 800; color: #0f172a;">स्वागत आहे, {{ request.user.username }}!</h3>
@@ -171,28 +168,27 @@
             {% if request.user.is_superuser %}
                 <span class="role-badge badge-super">👑 मुख्य प्रशासक (Super-Admin)</span>
             {% else %}
-                <span class="role-badge badge-coadmin">🏛️ शाखा समन्वयक (Co-Admin)</span>
+                <span class="role-badge badge-coadmin">🏛️️ शाखा समन्वयक (Co-Admin)</span>
             {% endif %}
         </div>
     </div>
 
     {% if not request.user.is_superuser %}
-    <!-- ================= 1. BRANCH CO-ADMIN INTERFACE ================= -->
+    <!-- 1. BRANCH CO-ADMIN INTERFACE -->
     <div class="portal-grid">
-        <!-- Student Card -->
         <div class="portal-card">
             <div>
                 <div class="card-icon">👨‍🎓</div>
                 <div class="card-title">विद्यार्थी / वर्धक नोंदी</div>
-                <div class="card-desc">तुमच्या शाखेतील नवीन विद्यार्थ्यांची नावे आणि रोल नंबर जोडा किंवा बदला.</div>
+                <div class="card-desc">तुमच्या शाखेतील नवीन विद्यार्थ्यांची नावे आणि रोल नंबर जोडा किंवा थेट Excel फाईल अपलोड करा.</div>
             </div>
             <div class="card-btn-group">
-                <a href="{% url 'admin:results_student_add' %}" class="btn-action btn-add">+ नवीन वर्धक जोडा</a>
+                <a href="{% url 'bulk_upload' %}" class="btn-action btn-upload">📥 एक्सेल द्वारे एकत्रित अपलोड (Bulk)</a>
+                <a href="{% url 'admin:results_student_add' %}" class="btn-action btn-add">+ एक विद्यार्थी जोडा</a>
                 <a href="{% url 'admin:results_student_changelist' %}" class="btn-action btn-view">यादी पहा</a>
             </div>
         </div>
 
-        <!-- Scores Card -->
         <div class="portal-card">
             <div>
                 <div class="card-icon">📝</div>
@@ -207,9 +203,20 @@
     </div>
 
     {% else %}
-    <!-- ================= 2. MAIN SUPER-ADMIN INTERFACE ================= -->
+    <!-- 2. MAIN SUPER-ADMIN INTERFACE -->
     <div class="portal-grid">
-        <!-- Branches -->
+        <div class="portal-card">
+            <div>
+                <div class="card-icon">📁</div>
+                <div class="card-title">एकत्रित डेटा अपलोड</div>
+                <div class="card-desc">कोणत्याही शाखेचा संपूर्ण डेटा Excel / CSV फाईलद्वारे एकाच क्लिकवर लोड करा.</div>
+            </div>
+            <div class="card-btn-group">
+                <a href="{% url 'bulk_upload' %}" class="btn-action btn-upload">📥 एक्सेल फाईल अपलोड करा</a>
+                <a href="{% url 'download_sample_csv' %}" class="btn-action btn-view">सॅम्पल फाईल डाऊनलोड</a>
+            </div>
+        </div>
+
         <div class="portal-card">
             <div>
                 <div class="card-icon">🏛️</div>
@@ -222,7 +229,6 @@
             </div>
         </div>
 
-        <!-- Students -->
         <div class="portal-card">
             <div>
                 <div class="card-icon">👥</div>
@@ -235,24 +241,10 @@
             </div>
         </div>
 
-        <!-- Scores -->
-        <div class="portal-card">
-            <div>
-                <div class="card-icon">📊</div>
-                <div class="card-title">विषय व गुण नोंदी</div>
-                <div class="card-desc">परीक्षेचे विषय (मॅक्स/पासिंग मार्क्स) आणि सर्व शाखांच्या गुणांचे नियंत्रण.</div>
-            </div>
-            <div class="card-btn-group">
-                <a href="{% url 'admin:results_subject_changelist' %}" class="btn-action btn-view">विषय सूची</a>
-                <a href="{% url 'admin:results_score_changelist' %}" class="btn-action btn-add">सर्व गुण तपासा</a>
-            </div>
-        </div>
-
-        <!-- Users & Co-Admins -->
         <div class="portal-card">
             <div>
                 <div class="card-icon">🔑</div>
-                <div class="card-title">Co-Admins / युझर खाती</div>
+                <div class="card-title">Co-Admins खाती</div>
                 <div class="card-desc">नवीन शाखा प्रमुखांना स्टाफ लॉगिन अधिकार देणे व पासवर्ड व्यवस्थापन.</div>
             </div>
             <div class="card-btn-group">
@@ -262,7 +254,7 @@
         </div>
     </div>
 
-    <!-- Co-Admin Live Audit Trail (Track Changes) -->
+    <!-- Co-Admin Live Audit Trail -->
     {% load log %}
     {% get_admin_log 10 as admin_log %}
     <div class="audit-section">
