@@ -3,303 +3,258 @@
 <html lang="mr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>‘स्व‘-रूपवर्धिनी - गुणपत्रिका - {{ student.name }}</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>गुणपत्रिका - {{ student.name }}</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Devanagari:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <!-- html2pdf library for mobile PDF export -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <style>
         :root {
-            --brand-primary: #9a3412;
-            --brand-saffron: #d97706;
-            --cert-border: #b45309;
+            --brand-primary: #c2410c;
+            --brand-gold: #f59e0b;
         }
 
         body {
             font-family: 'Noto Sans Devanagari', sans-serif;
             background-color: #f1f5f9;
+            margin: 0;
+            padding: 0;
             color: #1e293b;
         }
 
-        .cert-outer-wrapper {
-            max-width: 860px;
-            margin: 20px auto;
+        .mobile-wrapper {
+            max-width: 480px;
+            margin: 0 auto;
+            padding: 12px 12px 90px 12px;
         }
 
-        .cert-frame {
-            background-color: #ffffff;
-            border: 10px solid #fed7aa;
-            outline: 3px solid var(--cert-border);
-            outline-offset: -6px;
-            padding: 36px 40px;
-            border-radius: 12px;
-            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.08);
-            position: relative;
+        /* Certificate Card */
+        .report-card {
+            background: #ffffff;
+            border-radius: 16px;
+            border: 3px solid #fdba74;
+            padding: 18px 14px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
         }
 
-        .cert-header {
-            border-bottom: 2px dashed #f59e0b;
-            padding-bottom: 18px;
-            margin-bottom: 20px;
-            text-align: center;
-        }
-
-        .cert-logo {
-            max-height: 80px;
+        .header-logo {
+            max-height: 56px;
             width: auto;
-            margin-bottom: 10px;
+            margin-bottom: 8px;
         }
 
-        .student-meta-box {
+        .student-box {
             background: #fffbeb;
             border: 1px solid #fde68a;
-            border-radius: 10px;
-            padding: 14px 20px;
-            margin-bottom: 20px;
+            border-radius: 12px;
+            padding: 12px;
+            margin: 14px 0;
         }
 
-        .table-marks thead {
+        /* Mobile Marks Item */
+        .subject-item {
             background: #f8fafc;
-            border-bottom: 2px solid #94a3b8;
-        }
-
-        .alert-congrats {
-            background: #f0fdf4;
-            border: 2px solid #86efac;
-            color: #166534;
             border-radius: 10px;
-            padding: 14px 18px;
-        }
-
-        .alert-warning-alert {
-            background: #fef2f2;
-            border: 2px solid #fca5a5;
-            color: #991b1b;
-            border-radius: 10px;
-            padding: 14px 18px;
-        }
-
-        .action-bar {
-            max-width: 860px;
-            margin: 0 auto 16px auto;
+            padding: 10px 12px;
+            margin-bottom: 8px;
+            border: 1px solid #e2e8f0;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            flex-wrap: wrap;
+        }
+
+        /* Fixed Bottom Action Bar for Mobile */
+        .bottom-action-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: #ffffff;
+            border-top: 1px solid #e2e8f0;
+            padding: 10px 16px;
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            box-shadow: 0 -4px 10px rgba(0, 0, 0, 0.05);
+            z-index: 1000;
+        }
+
+        .bottom-bar-inner {
+            max-width: 480px;
+            width: 100%;
+            display: flex;
             gap: 10px;
         }
 
+        .btn-download {
+            background: #16a34a;
+            color: #ffffff;
+            border: none;
+            padding: 12px;
+            border-radius: 10px;
+            font-weight: 700;
+            flex: 2;
+        }
+
+        .btn-back {
+            background: #f1f5f9;
+            color: #475569;
+            border: 1px solid #cbd5e1;
+            padding: 12px;
+            border-radius: 10px;
+            font-weight: 700;
+            text-decoration: none;
+            text-align: center;
+            flex: 1;
+        }
+
         @media print {
-            .no-print { display: none !important; }
-            body { background: #ffffff !important; padding: 0 !important; }
-            .cert-outer-wrapper { max-width: 100% !important; margin: 0 !important; }
-            .cert-frame {
-                border: 4px solid #b45309 !important;
-                outline: none !important;
-                box-shadow: none !important;
-                padding: 16px !important;
-            }
+            .no-print, .bottom-action-bar { display: none !important; }
+            .mobile-wrapper { max-width: 100% !important; padding: 0 !important; }
         }
     </style>
 </head>
-<body class="py-3">
+<body>
 
-    <!-- Top Action Buttons -->
-    <div class="action-bar no-print px-2">
-        <a href="{% url 'search_result' %}" class="btn btn-outline-secondary fw-semibold">
-            ← दुसरा निकाल शोधा
-        </a>
-        <div class="d-flex gap-2">
-            <button id="downloadPdfBtn" onclick="generatePDF()" class="btn btn-success fw-bold px-3 py-2 shadow-sm">
-                📥 मोबाईल PDF डाऊनलोड
-            </button>
-            <button onclick="window.print()" class="btn btn-outline-dark fw-bold px-3 py-2">
-                🖨️ प्रिंट
-            </button>
+<div class="mobile-wrapper">
+    <div class="report-card" id="certificateNode">
+
+        <!-- Top Branding -->
+        <div class="text-center pb-2 border-bottom">
+            <img src="{% static 'results/swaroop_header.png' %}" alt="‘स्व‘-रूपवर्धिनी" class="header-logo">
+            <div class="badge bg-warning text-dark px-2 py-1 rounded-pill" style="font-size: 0.72rem;">
+                भाग - ३ - गुणवत्ता वाढ अभियान
+            </div>
+            <div class="fw-bold text-secondary mt-1" style="font-size: 0.78rem;">
+                सहामाही परीक्षा - आत्मपरीक्षण व उद्दिष्ट निश्चिती
+            </div>
+            <div class="fw-bold text-dark mt-1" style="font-size: 0.95rem;">
+                अधिकृत विद्यार्थी गुणपत्रिका
+            </div>
         </div>
-    </div>
 
-    <!-- Certificate Card To Download -->
-    <div class="cert-outer-wrapper" id="certificateNode">
-        <div class="cert-frame">
-            
-            <div class="cert-header">
+        <!-- Student Details -->
+        <div class="student-box">
+            <div class="d-flex justify-content-between align-items-center">
                 <div>
-                    <img src="{% static 'results/swaroop_header.png' %}" alt="‘स्व‘-रूपवर्धिनी" class="cert-logo">
+                    <span class="text-muted" style="font-size: 0.75rem;">वर्धक नाव:</span>
+                    <div class="fw-bold text-dark" style="font-size: 1.05rem;">{{ student.name }}</div>
                 </div>
-                <div class="badge bg-warning text-dark px-3 py-1 fs-6 rounded-pill fw-bold shadow-sm mb-2">
-                    भाग - ३ - वार्षिक/ सहामाही परीक्षा गुणवत्ता वाढ अभियान
-                </div>
-                <div class="fw-bold text-secondary fs-6">
-                    सहामाही परीक्षा - आत्मपरीक्षण व उद्दिष्ट निश्चिती
-                </div>
-                <div class="text-uppercase fw-bold text-dark mt-2" style="font-size: 1.25rem; letter-spacing: 0.5px;">
-                    विद्यार्थी प्रगती पुस्तक / अधिकृत गुणपत्रिका
+                <div class="text-end">
+                    <span class="text-muted" style="font-size: 0.75rem;">Roll No:</span>
+                    <div class="fw-bold text-danger" style="font-size: 1.05rem;">{{ student.roll_number }}</div>
                 </div>
             </div>
-
-            <!-- Student Info -->
-            <div class="student-meta-box">
-                <div class="row g-2 align-items-center">
-                    <div class="col-7">
-                        <span class="text-muted small fw-bold">वर्धक नाव (Student Name):</span>
-                        <h4 class="fw-bold text-dark mb-0">{{ student.name }}</h4>
-                    </div>
-                    <div class="col-5 text-end">
-                        <span class="text-muted small fw-bold">Roll Number:</span>
-                        <h5 class="fw-bold text-danger mb-0">{{ student.roll_number }}</h5>
-                    </div>
-                    <div class="col-12 mt-2 pt-2 border-top border-warning-subtle">
-                        <span class="text-muted fw-bold">शाखा नाव:</span>
-                        <strong class="text-dark fs-6">{{ student.branch_group.name }}</strong>
-                    </div>
-                </div>
+            <div class="mt-2 pt-2 border-top border-warning-subtle" style="font-size: 0.82rem;">
+                <span class="text-muted">शाखा:</span> <strong>{{ student.branch_group.name }}</strong>
             </div>
-
-            <!-- Subject Scores -->
-            <div class="table-responsive mb-3">
-                <table class="table table-bordered text-center align-middle mb-0">
-                    <thead class="table-light">
-                        <tr>
-                            <th class="text-start ps-3 py-2" style="width: 40%;">विषयाचे नाव (Subject)</th>
-                            <th>एकूण गुण</th>
-                            <th>उत्तीर्ण गुण</th>
-                            <th>मिळालेले गुण</th>
-                            <th>श्रेणी (Grade)</th>
-                            <th>निकाल</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for score in scores %}
-                        <tr>
-                            <td class="text-start ps-3 fw-bold text-dark">{{ score.subject.name }}</td>
-                            <td>{{ score.subject.max_marks }}</td>
-                            <td>{{ score.subject.passing_marks }}</td>
-                            <td class="fw-bold fs-5 text-dark">{{ score.marks_obtained }}</td>
-                            <td>
-                                <span class="badge {% if score.is_passed %}bg-secondary{% else %}bg-danger{% endif %} px-2 py-1">
-                                    {{ score.grade }}
-                                </span>
-                            </td>
-                            <td>
-                                {% if score.is_passed %}
-                                    <span class="badge bg-success px-3 py-1">उत्तीर्ण</span>
-                                {% else %}
-                                    <span class="badge bg-danger px-3 py-1">सुधारणा आवश्यक</span>
-                                {% endif %}
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-
-            <!-- Aggregates -->
-            <div class="row text-center g-2 mb-3">
-                <div class="col-3">
-                    <div class="border rounded-3 p-2 bg-light">
-                        <div class="text-muted small fw-bold">एकूण गुण</div>
-                        <div class="h5 fw-bold text-dark mb-0">{{ student.total_marks_obtained }} / {{ student.total_max_marks }}</div>
-                    </div>
-                </div>
-                <div class="col-3">
-                    <div class="border rounded-3 p-2 bg-light">
-                        <div class="text-muted small fw-bold">टक्केवारी</div>
-                        <div class="h5 fw-bold text-dark mb-0">{{ student.percentage }}%</div>
-                    </div>
-                </div>
-                <div class="col-3">
-                    <div class="border rounded-3 p-2 bg-light">
-                        <div class="text-muted small fw-bold">एकूण श्रेणी</div>
-                        <div class="h5 fw-bold text-primary mb-0">{{ student.overall_grade }}</div>
-                    </div>
-                </div>
-                <div class="col-3">
-                    <div class="border rounded-3 p-2 bg-light">
-                        <div class="text-muted small fw-bold">अंतिम निकाल</div>
-                        {% if student.is_passed %}
-                            <div class="h5 fw-bold text-success mb-0">उत्तीर्ण</div>
-                        {% else %}
-                            <div class="h5 fw-bold text-danger mb-0">पुनःप्रयत्न आवश्यक</div>
-                        {% endif %}
-                    </div>
-                </div>
-            </div>
-
-            <!-- Conditional Remarks -->
-            {% if student.is_passed %}
-                {% if student.percentage >= 60 %}
-                <div class="alert-congrats text-center mb-3">
-                    <h6 class="fw-bold mb-1">🎉 मनःपूर्वक अभिनंदन!</h6>
-                    <small>तुम्ही या परीक्षेत उत्तम यश संपादन केले आहे. पुढील वाटचालीस ‘स्व‘-रूपवर्धिनी परिवारातर्फे हार्दिक शुभेच्छा!</small>
-                </div>
-                {% else %}
-                <div class="alert-congrats text-center mb-3" style="background:#eff6ff; border-color:#93c5fd; color:#1e40af;">
-                    <h6 class="fw-bold mb-1">👏 अभिनंदन, तुम्ही परीक्षेत उत्तीर्ण झाला आहात!</h6>
-                    <small>पुढील वार्षिक परीक्षेत टक्केवारी आणखी वाढवण्यासाठी नियमित वाचन आणि सराव सुरू ठेवा.</small>
-                </div>
-                {% endif %}
-            {% else %}
-                <div class="alert-warning-alert text-center mb-3">
-                    <h6 class="fw-bold mb-1">⚠️️ लक्ष द्या: गुणवत्ता सुधारणा व मार्गदर्शनाची आवश्यकता!</h6>
-                    <small>काही विषयात अपेक्षित गुण मिळालेले नाहीत. शिक्षकांच्या मदतीने अभ्यासाचे नियोजन करून उद्दिष्ट साध्य करा.</small>
-                </div>
-            {% endif %}
-
-            <!-- Signatures -->
-            <div class="row pt-3 mt-3 border-top text-center">
-                <div class="col-4">
-                    <div style="height: 30px;"></div>
-                    <div class="fw-bold text-dark small border-top pt-1">शाखा शिक्षक / समन्वयक</div>
-                </div>
-                <div class="col-4">
-                    <div style="height: 30px;"></div>
-                    <div class="fw-bold text-dark small border-top pt-1">पालकांची स्वाक्षरी</div>
-                </div>
-                <div class="col-4">
-                    <div style="height: 30px;"></div>
-                    <div class="fw-bold text-dark small border-top pt-1">अभियान प्रमुख, ‘स्व‘-रूपवर्धिनी</div>
-                </div>
-            </div>
-
-            <div class="text-center text-muted small mt-3 pt-1" style="font-size: 0.78rem;">
-                * ही संगणकीकृत अधिकृत गुणपत्रिका ‘स्व‘-रूपवर्धिनी अंतर्गत शैक्षणिक गुणवत्ता वाढ मोहिमेसाठी वितरीत केलेली आहे.
-            </div>
-
         </div>
+
+        <!-- Marks List -->
+        <div class="mb-3">
+            <div class="text-muted fw-bold mb-2" style="font-size: 0.8rem;">विषयानुसार गुण:</div>
+            {% for score in scores %}
+            <div class="subject-item">
+                <div>
+                    <div class="fw-bold text-dark" style="font-size: 0.92rem;">{{ score.subject.name }}</div>
+                    <small class="text-muted">कमाल गुण: {{ score.subject.max_marks }}</small>
+                </div>
+                <div class="text-end">
+                    <span class="fw-bold fs-6 text-dark">{{ score.marks_obtained }}</span>
+                    <span class="badge {% if score.is_passed %}bg-success{% else %}bg-danger{% endif %} ms-1">
+                        {{ score.grade }}
+                    </span>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- Total & Result Summary -->
+        <div class="row g-2 text-center mb-3">
+            <div class="col-4">
+                <div class="p-2 border rounded-3 bg-light">
+                    <div class="text-muted" style="font-size: 0.7rem;">एकूण गुण</div>
+                    <div class="fw-bold text-dark" style="font-size: 0.85rem;">{{ student.total_marks_obtained }}/{{ student.total_max_marks }}</div>
+                </div>
+            </div>
+            <div class="col-4">
+                <div class="p-2 border rounded-3 bg-light">
+                    <div class="text-muted" style="font-size: 0.7rem;">टक्केवारी</div>
+                    <div class="fw-bold text-dark" style="font-size: 0.85rem;">{{ student.percentage }}%</div>
+                </div>
+            </div>
+            <div class="col-4">
+                <div class="p-2 border rounded-3 bg-light">
+                    <div class="text-muted" style="font-size: 0.7rem;">निकाल</div>
+                    {% if student.is_passed %}
+                        <div class="fw-bold text-success" style="font-size: 0.85rem;">उत्तीर्ण</div>
+                    {% else %}
+                        <div class="fw-bold text-danger" style="font-size: 0.85rem;">सुधारणा</div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Feedback Alert -->
+        {% if student.is_passed %}
+            {% if student.percentage >= 60 %}
+            <div class="p-2 rounded-3 text-center mb-2" style="background: #f0fdf4; border: 1px solid #86efac; color: #166534; font-size: 0.82rem;">
+                <strong>🎉 मनःपूर्वक अभिनंदन!</strong> उत्तम कामगिरी सुरू ठेवा.
+            </div>
+            {% else %}
+            <div class="p-2 rounded-3 text-center mb-2" style="background: #eff6ff; border: 1px solid #93c5fd; color: #1e40af; font-size: 0.82rem;">
+                <strong>👏 अभिनंदन!</strong> पुढील परीक्षेत आणखी सराव करा.
+            </div>
+            {% endif %}
+        {% else %}
+            <div class="p-2 rounded-3 text-center mb-2" style="background: #fef2f2; border: 1px solid #fca5a5; color: #991b1b; font-size: 0.82rem;">
+                <strong>⚠️ लक्ष द्या:</strong> काही विषयात मार्गदर्शनाची व अधिक सरावाची आवश्यकता आहे.
+            </div>
+        {% endif %}
+
+        <div class="text-center text-muted pt-2 border-top" style="font-size: 0.68rem;">
+            * ‘स्व‘-रूपवर्धिनी अंतर्गत शैक्षणिक गुणवत्ता वाढ मोहीम.
+        </div>
+
     </div>
+</div>
 
-    <!-- Script for 1-Tap Mobile PDF Download -->
-    <script>
-        function generatePDF() {
-            const btn = document.getElementById('downloadPdfBtn');
-            btn.innerText = "⏳ PDF तयार होत आहे...";
-            btn.disabled = true;
+<!-- Mobile Bottom Action Bar -->
+<div class="bottom-action-bar">
+    <div class="bottom-bar-inner">
+        <a href="{% url 'search_result' %}" class="btn-back">← मागे</a>
+        <button id="downloadPdfBtn" onclick="generatePDF()" class="btn-download">📥 PDF डाऊनलोड</button>
+    </div>
+</div>
 
-            const element = document.getElementById('certificateNode');
-            const studentName = "{{ student.name|slugify }}";
-            const rollNo = "{{ student.roll_number }}";
+<script>
+    function generatePDF() {
+        const btn = document.getElementById('downloadPdfBtn');
+        btn.innerText = "⏳ तयार होत आहे...";
+        btn.disabled = true;
 
-            const opt = {
-                margin:       [8, 8, 8, 8],
-                filename:     `ReportCard_${studentName}_${rollNo}.pdf`,
-                image:        { type: 'jpeg', quality: 0.98 },
-                html2canvas:  { scale: 2, useCORS: true, logging: false },
-                jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
-            };
+        const element = document.getElementById('certificateNode');
+        const studentName = "{{ student.name|slugify }}";
+        const rollNo = "{{ student.roll_number }}";
 
-            html2pdf().set(opt).from(element).save().then(() => {
-                btn.innerText = "📥 मोबाईल PDF डाऊनलोड";
-                btn.disabled = false;
-            }).catch(err => {
-                console.error(err);
-                alert("PDF डाऊनलोड करताना अडचण आली, कृपया 'प्रिंट' बटण वापरा.");
-                btn.innerText = "📥 मोबाईल PDF डाऊनलोड";
-                btn.disabled = false;
-            });
-        }
-    </script>
+        const opt = {
+            margin:       [6, 6, 6, 6],
+            filename:     `ReportCard_${studentName}_${rollNo}.pdf`,
+            image:        { type: 'jpeg', quality: 0.98 },
+            html2canvas:  { scale: 2, useCORS: true },
+            jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+        };
+
+        html2pdf().set(opt).from(element).save().then(() => {
+            btn.innerText = "📥 PDF डाऊनलोड";
+            btn.disabled = false;
+        }).catch(err => {
+            alert("PDF डाऊनलोड करताना अडचण आली.");
+            btn.innerText = "📥 PDF डाऊनलोड";
+            btn.disabled = false;
+        });
+    }
+</script>
 
 </body>
 </html>

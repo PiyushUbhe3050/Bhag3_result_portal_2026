@@ -1,16 +1,17 @@
 {% extends "admin/base.html" %}
 {% load static %}
 
-{% block title %}‘स्व‘-रूपवर्धिनी | ॲडमिन नियंत्रण कक्ष{% endblock %}
+{% block title %}‘स्व‘-रूपवर्धिनी | नियंत्रण कक्ष{% endblock %}
 
 {% block extrahead %}
 {{ block.super }}
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Devanagari:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
     :root {
-        --brand-primary: #9a3412;
+        --brand-red: #c2410c;
         --brand-dark: #7c2d12;
-        --brand-saffron: #d97706;
+        --brand-gold: #f59e0b;
         --brand-bg: #f8fafc;
         --card-border: #e2e8f0;
     }
@@ -19,116 +20,112 @@
         font-family: 'Noto Sans Devanagari', -apple-system, BlinkMacSystemFont, sans-serif !important;
         background-color: var(--brand-bg) !important;
         color: #1e293b !important;
+        margin: 0 !important;
+        -webkit-tap-highlight-color: transparent;
     }
 
-    /* Clean, Professional Top Header */
+    /* Branded Header */
     #header {
-        background: linear-gradient(135deg, #7c2d12 0%, #9a3412 100%) !important;
-        padding: 14px 24px !important;
-        border-bottom: 3px solid var(--brand-saffron) !important;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08) !important;
+        background: linear-gradient(135deg, #7c2d12 0%, #c2410c 100%) !important;
+        padding: 12px 16px !important;
+        border-bottom: 3px solid var(--brand-gold) !important;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1) !important;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
     }
 
     .branding-container {
         display: flex;
         align-items: center;
-        gap: 16px;
+        gap: 12px;
     }
 
     .branding-logo {
-        max-height: 52px;
+        max-height: 44px;
         background: #ffffff;
-        padding: 4px 10px;
-        border-radius: 8px;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+        padding: 3px 6px;
+        border-radius: 6px;
     }
 
     .branding-title {
-        font-size: 1.35rem;
+        font-size: 1.15rem;
         font-weight: 800;
         color: #ffffff;
-        letter-spacing: 0.5px;
-    }
-
-    .branding-campaign {
-        font-size: 0.85rem;
-        font-weight: 600;
-        color: #fef08a;
+        line-height: 1.2;
     }
 
     .branding-sub {
         font-size: 0.75rem;
-        color: #f1f5f9;
+        color: #fef08a;
     }
 
     #user-tools {
-        font-size: 0.9rem !important;
+        font-size: 0.82rem !important;
         color: #ffffff !important;
         font-weight: 600 !important;
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+        align-items: center;
     }
 
     #user-tools a {
         color: #fef08a !important;
-        border-bottom: none !important;
         padding: 4px 8px;
         border-radius: 4px;
-        background: rgba(255,255,255,0.1);
+        background: rgba(255, 255, 255, 0.12);
+        text-decoration: none;
     }
 
-    #user-tools a:hover {
-        background: rgba(255,255,255,0.2);
+    /* Co-Admin Mobile View Wrapper */
+    .mobile-shell {
+        max-width: 480px;
+        margin: 0 auto;
+        padding: 12px;
     }
 
-    /* Center Content Container */
-    #content {
-        max-width: 1200px;
-        margin: 20px auto !important;
-        padding: 20px !important;
+    /* Super-Admin Desktop Shell */
+    .desktop-shell {
+        max-width: 1240px;
+        margin: 0 auto;
+        padding: 20px;
     }
 
-    /* Fix Breadcrumbs */
+    /* Buttons & Standard Admin Elements */
+    .button, input[type=submit], .submit-row input {
+        background: var(--brand-red) !important;
+        border: none !important;
+        color: #fff !important;
+        border-radius: 8px !important;
+        font-weight: 700 !important;
+        padding: 10px 18px !important;
+        font-size: 0.95rem !important;
+    }
+
+    .button:hover, input[type=submit]:hover {
+        background: var(--brand-dark) !important;
+    }
+
     .breadcrumbs {
         background: #ffffff !important;
         border: 1px solid var(--card-border) !important;
         border-radius: 8px !important;
-        color: #64748b !important;
-        padding: 10px 16px !important;
-        font-size: 0.9rem !important;
-        margin-bottom: 20px !important;
-    }
-
-    .breadcrumbs a {
-        color: var(--brand-primary) !important;
-        font-weight: 600;
-    }
-
-    /* Clean Buttons */
-    .button, input[type=submit], input[type=button], .submit-row input, a.button {
-        background: var(--brand-primary) !important;
-        border: none !important;
-        color: #ffffff !important;
-        border-radius: 8px !important;
-        font-weight: 700 !important;
-        padding: 10px 20px !important;
-        font-size: 0.95rem !important;
-        cursor: pointer;
-    }
-
-    .button:hover, input[type=submit]:hover, a.button:hover {
-        background: var(--brand-dark) !important;
+        margin: 10px auto !important;
+        padding: 8px 14px !important;
+        font-size: 0.85rem !important;
     }
 </style>
 {% endblock %}
 
 {% block branding %}
 <div class="branding-container">
-    <a href="{% url 'admin:index' %}" style="display: flex; align-items: center; text-decoration: none;">
+    <a href="{% url 'admin:index' %}">
         <img src="{% static 'results/swaroop_header.png' %}" alt="‘स्व‘-रूपवर्धिनी" class="branding-logo">
     </a>
-    <div style="display: flex; flex-direction: column;">
-        <span class="branding-title">‘स्व‘-रूपवर्धिनी - परीक्षा नियंत्रण कक्ष</span>
-        <span class="branding-campaign">भाग - ३ - वार्षिक/ सहामाही परीक्षा गुणवत्ता वाढ अभियान</span>
-        <span class="branding-sub">सहामाही परीक्षा - आत्मपरीक्षण व उद्दिष्ट निश्चिती</span>
+    <div>
+        <div class="branding-title">‘स्व‘-रूपवर्धिनी - नियंत्रण कक्ष</div>
+        <div class="branding-sub">भाग - ३ - गुणवत्ता वाढ अभियान</div>
     </div>
 </div>
 {% endblock %}

@@ -3,113 +3,158 @@
 <html lang="mr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>‘स्व‘-रूपवर्धिनी - परीक्षा निकाल शोध कक्ष</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>‘स्व‘-रूपवर्धिनी - निकाल कक्ष</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Devanagari:wght@400;600;700;800&display=swap" rel="stylesheet">
     <style>
         :root {
-            --brand-primary: #dc2626;
-            --brand-dark: #991b1b;
+            --brand-primary: #c2410c;
+            --brand-gold: #f59e0b;
         }
+
         body {
             font-family: 'Noto Sans Devanagari', sans-serif;
-            background-color: #fdfbf7;
+            background-color: #f8fafc;
+            margin: 0;
+            padding: 0;
+            color: #1e293b;
         }
-        .btn-brand {
-            background-color: var(--brand-primary);
-            color: #ffffff;
-            border: none;
-            transition: all 0.2s ease-in-out;
+
+        .mobile-container {
+            max-width: 480px;
+            margin: 0 auto;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            padding: 16px;
         }
-        .btn-brand:hover {
-            background-color: var(--brand-dark);
-            color: #ffffff;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(220, 38, 38, 0.3);
+
+        .header-card {
+            background: #ffffff;
+            border-radius: 16px;
+            padding: 20px 16px;
+            text-align: center;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+            border: 1px solid #e2e8f0;
+            margin-bottom: 16px;
         }
-        .org-header-banner {
-            max-height: 120px;
+
+        .ngo-banner-img {
+            max-height: 72px;
             width: auto;
-            object-fit: contain;
+            margin-bottom: 10px;
         }
-        .campaign-title-badge {
-            font-size: 1.25rem !important;
+
+        .campaign-pill {
+            background: #fef3c7;
+            color: #92400e;
+            font-size: 0.8rem;
             font-weight: 700;
-            padding: 10px 24px !important;
+            padding: 6px 14px;
+            border-radius: 20px;
             display: inline-block;
-            line-height: 1.5;
+            margin-bottom: 4px;
         }
-        .exam-sub-title {
-            font-size: 1.25rem !important;
+
+        .search-form-card {
+            background: #ffffff;
+            border-radius: 16px;
+            padding: 20px 18px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            border: 1px solid #e2e8f0;
+            border-top: 4px solid var(--brand-primary);
+        }
+
+        .form-label {
             font-weight: 700;
-            color: #1f2937;
+            font-size: 0.9rem;
+            margin-bottom: 6px;
+            color: #334155;
+        }
+
+        .form-control, .form-select {
+            padding: 12px 14px;
+            font-size: 1rem;
+            border-radius: 10px;
+            border: 1px solid #cbd5e1;
+        }
+
+        .form-control:focus, .form-select:focus {
+            border-color: var(--brand-primary);
+            box-shadow: 0 0 0 3px rgba(194, 65, 12, 0.15);
+        }
+
+        .btn-search {
+            background: linear-gradient(135deg, #c2410c 0%, #9a3412 100%);
+            color: #ffffff;
+            font-weight: 800;
+            font-size: 1.05rem;
+            padding: 14px;
+            border-radius: 12px;
+            border: none;
+            width: 100%;
             margin-top: 8px;
+            box-shadow: 0 4px 10px rgba(194, 65, 12, 0.25);
         }
     </style>
 </head>
-<body class="py-4">
-<div class="container" style="max-width: 820px;">
+<body>
 
-    <!-- अधिकृत संस्था बॅनर आणि मोहीम शीर्षके -->
-    <div class="text-center mb-4">
-        <div class="mb-3">
-            <img src="{% static 'results/swaroop_header.png' %}" alt="‘स्व‘-रूपवर्धिनी" class="img-fluid org-header-banner">
-        </div>
+<div class="mobile-container">
 
+    <!-- Header Section -->
+    <div class="header-card">
+        <img src="{% static 'results/swaroop_header.png' %}" alt="‘स्व‘-रूपवर्धिनी" class="img-fluid ngo-banner-img">
         <div>
-            <span class="badge bg-warning text-dark campaign-title-badge rounded-pill shadow-sm">
-                भाग - ३ - वार्षिक/ सहामाही परीक्षा गुणवत्ता वाढ अभियान
-            </span>
-        </div>
-
-        <div class="exam-sub-title">
-            सहामाही परीक्षा - आत्मपरीक्षण व उद्दिष्ट निश्चिती
+            <span class="campaign-pill">भाग - ३ - गुणवत्ता वाढ अभियान</span>
+            <div style="font-weight: 700; font-size: 0.95rem; color: #475569; margin-top: 4px;">
+                सहामाही परीक्षा - आत्मपरीक्षण व उद्दिष्ट निश्चिती
+            </div>
         </div>
     </div>
 
-    <!-- सर्च फॉर्म -->
-    <div class="card shadow border-0 p-4 p-md-5 mb-4 rounded-4 bg-white border-top border-5 border-warning">
-        <h4 class="fw-bold text-center text-dark mb-4">परीक्षेचा निकाल शोधा</h4>
-        <form method="POST">
-            {% csrf_token %}
-            <div class="row g-3">
-                <div class="col-12">
-                    <label class="form-label fw-bold fs-5">शाखा नाव <span class="text-danger">*</span></label>
-                    <select name="branch_group" class="form-select form-select-lg" required>
-                        <option value="" disabled selected>-- तुमची शाखा निवडा --</option>
-                        {% for b in branches %}
-                        <option value="{{ b.id }}">{{ b.name }}</option>
-                        {% endfor %}
-                    </select>
-                </div>
-                <div class="col-md-6">
-                    <label class="form-label fw-bold fs-5">Roll number <span class="text-danger">*</span></label>
-                    <input type="text" name="roll_number" class="form-control form-control-lg" placeholder="उदा. 101" required>
-                </div>
-                <div class="col-md-6">
-                    <label class="form-label fw-bold fs-5">वर्धक नाव <span class="text-danger">*</span></label>
-                    <input type="text" name="name" class="form-control form-control-lg" placeholder="उदा. राहुल शर्मा" required>
-                </div>
-                <div class="col-12 mt-4">
-                    <button type="submit" class="btn btn-brand w-100 py-3 fs-5 fw-bold shadow rounded-3">
-                        गुणपत्रिका पहा (Fetch Report Card) ➔
-                    </button>
-                </div>
+    <!-- Search Form (Using GET to prevent any CSRF issue) -->
+    <div class="search-form-card">
+        <h5 class="fw-bold text-center mb-3 text-dark">परीक्षेचा निकाल शोधा</h5>
+        <form method="GET">
+            <div class="mb-3">
+                <label class="form-label">शाखा नाव निवडा *</label>
+                <select name="branch_group" class="form-select" required>
+                    <option value="" disabled selected>-- तुमची शाखा निवडा --</option>
+                    {% for b in branches %}
+                    <option value="{{ b.id }}">{{ b.name }}</option>
+                    {% endfor %}
+                </select>
             </div>
+
+            <div class="mb-3">
+                <label class="form-label">Roll Number *</label>
+                <input type="text" name="roll_number" class="form-control" placeholder="उदा. 101" required inputmode="numeric">
+            </div>
+
+            <div class="mb-4">
+                <label class="form-label">वर्धक नाव (Student Name) *</label>
+                <input type="text" name="name" class="form-control" placeholder="उदा. राहुल शर्मा" required>
+            </div>
+
+            <button type="submit" class="btn-search">
+                निकाल पहा (View Report) ➔
+            </button>
         </form>
     </div>
 
     {% if error %}
-    <div class="alert alert-danger shadow-sm rounded-3 text-center fw-semibold fs-5">
+    <div class="alert alert-danger rounded-3 text-center fw-semibold mt-3 p-3" style="font-size: 0.9rem;">
         {{ error }}
     </div>
     {% endif %}
 
-    <div class="text-center text-muted small mt-4">
-        © ‘स्व‘-रूपवर्धिनी | गुणवत्ता वाढ अभियान - तासिका विभाग - भाग ३
+    <div class="mt-auto text-center py-3 text-muted" style="font-size: 0.78rem;">
+        © ‘स्व‘-रूपवर्धिनी | परीक्षा विभाग
     </div>
 
 </div>
+
 </body>
 </html>

@@ -1,303 +1,178 @@
 {% extends "admin/base_site.html" %}
-{% load i18n static %}
+{% load i18n static log %}
 
 {% block content %}
 <style>
-    .dashboard-container {
-        display: flex;
-        flex-direction: column;
-        gap: 25px;
-    }
-
-    .role-banner {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        background: #ffffff;
-        border-radius: 12px;
-        padding: 16px 24px;
-        box-shadow: 0 2px 6px rgba(0,0,0,0.04);
-        border: 1px solid var(--card-border);
-    }
-
-    .role-badge {
-        padding: 6px 16px;
-        border-radius: 20px;
-        font-size: 0.9rem;
-        font-weight: 700;
-        letter-spacing: 0.5px;
-    }
-    .badge-super { background: #fee2e2; color: #991b1b; }
-    .badge-coadmin { background: #fef3c7; color: #92400e; }
-
-    .portal-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-        gap: 20px;
-    }
-
-    .portal-card {
+    /* Mobile-App Cards for Co-Admin */
+    .app-card {
         background: #ffffff;
         border-radius: 14px;
-        border: 1px solid var(--card-border);
-        padding: 24px;
-        display: flex;
-        flex-direction: column;
-        justify-content: space-between;
-        text-align: center;
-        box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
-        transition: transform 0.2s ease, box-shadow 0.2s ease;
+        border: 1px solid #e2e8f0;
+        padding: 18px;
+        margin-bottom: 14px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.03);
     }
 
-    .portal-card:hover {
-        transform: translateY(-3px);
-        box-shadow: 0 10px 15px -3px rgba(0,0,0,0.08);
-    }
-
-    .card-icon {
-        font-size: 2.2rem;
-        margin-bottom: 12px;
-    }
-
-    .card-title {
-        font-size: 1.2rem;
+    .app-card-title {
+        font-size: 1.1rem;
         font-weight: 700;
         color: #0f172a;
-        margin-bottom: 6px;
-    }
-
-    .card-desc {
-        font-size: 0.88rem;
-        color: #64748b;
-        margin-bottom: 20px;
-        line-height: 1.4;
-    }
-
-    .card-btn-group {
+        margin-bottom: 4px;
         display: flex;
-        flex-direction: column;
+        align-items: center;
         gap: 8px;
     }
 
-    .btn-action {
-        padding: 10px 14px;
-        font-size: 0.92rem;
+    .app-card-desc {
+        font-size: 0.85rem;
+        color: #64748b;
+        margin-bottom: 14px;
+    }
+
+    .app-btn {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        padding: 12px 14px;
+        border-radius: 10px;
+        font-size: 0.95rem;
         font-weight: 700;
-        border-radius: 8px;
         text-decoration: none;
-        display: block;
+        box-sizing: border-box;
+        margin-bottom: 8px;
         transition: 0.15s ease;
     }
-    .btn-add { background: #9a3412; color: #ffffff !important; }
-    .btn-add:hover { background: #7c2d12; }
+
+    .app-btn:last-child { margin-bottom: 0; }
+    .btn-main { background: #c2410c; color: #ffffff !important; }
     .btn-upload { background: #0284c7; color: #ffffff !important; }
-    .btn-upload:hover { background: #0369a1; }
-    .btn-view { background: #f1f5f9; color: #334155 !important; border: 1px solid #cbd5e1; }
-    .btn-view:hover { background: #e2e8f0; }
+    .btn-outline { background: #f8fafc; color: #334155 !important; border: 1px solid #cbd5e1; }
 
-    .audit-section {
-        background: #ffffff;
-        border-radius: 14px;
-        border: 1px solid var(--card-border);
-        padding: 24px;
-        box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+    /* Super-Admin Desktop Grid */
+    .admin-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+        gap: 16px;
+        margin-bottom: 24px;
     }
-
-    .audit-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        border-bottom: 2px solid #f1f5f9;
-        padding-bottom: 12px;
-        margin-bottom: 16px;
-    }
-
-    .audit-title {
-        font-size: 1.15rem;
-        font-weight: 700;
-        color: #0f172a;
-    }
-
-    .audit-table {
-        width: 100%;
-        border-collapse: collapse;
-        font-size: 0.9rem;
-    }
-
-    .audit-table th {
-        background: #f8fafc;
-        color: #475569;
-        font-weight: 700;
-        padding: 10px 14px;
-        text-align: left;
-        border-bottom: 1px solid #e2e8f0;
-    }
-
-    .audit-table td {
-        padding: 12px 14px;
-        border-bottom: 1px solid #f1f5f9;
-        color: #1e293b;
-    }
-
-    .badge-action {
-        display: inline-block;
-        padding: 3px 8px;
-        border-radius: 4px;
-        font-size: 0.78rem;
-        font-weight: 700;
-    }
-    .badge-add { background: #dcfce7; color: #15803d; }
-    .badge-change { background: #e0f2fe; color: #0369a1; }
-    .badge-delete { background: #fee2e2; color: #b91c1c; }
 </style>
 
-<div class="dashboard-container">
+{% if not request.user.is_superuser %}
+<!-- ================= MOBILE APP INTERFACE FOR CO-ADMINS ================= -->
+<div class="mobile-shell">
 
-    <div class="role-banner">
-        <div>
-            <h3 style="margin: 0; font-weight: 800; color: #0f172a;">स्वागत आहे, {{ request.user.username }}!</h3>
-            <p style="margin: 4px 0 0 0; color: #64748b; font-size: 0.9rem;">
-                {% if request.user.is_superuser %}
-                    सर्व शाखांचे संपूर्ण नियंत्रण व अहवाल डॅशबोर्ड (Super-Admin Control)
-                {% else %}
-                    तुमच्या नियुक्त शाखेचा विद्यार्थी व गुण नोंदणी कक्ष (Branch Co-Admin Portal)
-                {% endif %}
-            </p>
-        </div>
-        <div>
-            {% if request.user.is_superuser %}
-                <span class="role-badge badge-super">👑 मुख्य प्रशासक (Super-Admin)</span>
-            {% else %}
-                <span class="role-badge badge-coadmin">🏛️️ शाखा समन्वयक (Co-Admin)</span>
-            {% endif %}
-        </div>
+    <!-- Co-Admin Identity Badge -->
+    <div class="app-card" style="background: #fffbeb; border-color: #fde68a; text-align: center;">
+        <span style="font-size: 0.78rem; font-weight: 700; color: #92400e; text-transform: uppercase;">शाखा समन्वयक कक्ष</span>
+        <h3 style="margin: 4px 0; font-size: 1.25rem; font-weight: 800; color: #7c2d12;">{{ request.user.username }}</h3>
+        <p style="margin: 0; font-size: 0.85rem; color: #b45309;">तुमच्या शाखेचे निकाल व नोंदी व्यवस्थापन</p>
     </div>
 
-    {% if not request.user.is_superuser %}
-    <!-- 1. BRANCH CO-ADMIN INTERFACE -->
-    <div class="portal-grid">
-        <div class="portal-card">
-            <div>
-                <div class="card-icon">👨‍🎓</div>
-                <div class="card-title">विद्यार्थी / वर्धक नोंदी</div>
-                <div class="card-desc">तुमच्या शाखेतील नवीन विद्यार्थ्यांची नावे आणि रोल नंबर जोडा किंवा थेट Excel फाईल अपलोड करा.</div>
-            </div>
-            <div class="card-btn-group">
-                <a href="{% url 'bulk_upload' %}" class="btn-action btn-upload">📥 एक्सेल द्वारे एकत्रित अपलोड (Bulk)</a>
-                <a href="{% url 'admin:results_student_add' %}" class="btn-action btn-add">+ एक विद्यार्थी जोडा</a>
-                <a href="{% url 'admin:results_student_changelist' %}" class="btn-action btn-view">यादी पहा</a>
-            </div>
-        </div>
-
-        <div class="portal-card">
-            <div>
-                <div class="card-icon">📝</div>
-                <div class="card-title">परीक्षा गुण नोंद (Marks)</div>
-                <div class="card-desc">सहामाही परीक्षेतील विषयानुसार मिळालेले गुण भरा व तपासा.</div>
-            </div>
-            <div class="card-btn-group">
-                <a href="{% url 'admin:results_score_add' %}" class="btn-action btn-add">+ गुण नोंद करा</a>
-                <a href="{% url 'admin:results_score_changelist' %}" class="btn-action btn-view">सर्व गुण पहा</a>
-            </div>
-        </div>
+    <!-- Quick Action: Bulk Upload -->
+    <div class="app-card" style="border-left: 5px solid #0284c7;">
+        <div class="app-card-title">📁 एक्सेल / CSV एकत्रित नोंद</div>
+        <div class="app-card-desc">सर्व विद्यार्थ्यांची यादी व गुण एकाच फाईलद्वारे मोबाईलवरून अपलोड करा.</div>
+        <a href="{% url 'bulk_upload' %}" class="app-btn btn-upload">📥 एक्सेल / CSV अपलोड करा</a>
+        <a href="{% url 'download_sample_csv' %}" class="app-btn btn-outline">सॅम्पल फाईल डाऊनलोड</a>
     </div>
 
-    {% else %}
-    <!-- 2. MAIN SUPER-ADMIN INTERFACE -->
-    <div class="portal-grid">
-        <div class="portal-card">
-            <div>
-                <div class="card-icon">📁</div>
-                <div class="card-title">एकत्रित डेटा अपलोड</div>
-                <div class="card-desc">कोणत्याही शाखेचा संपूर्ण डेटा Excel / CSV फाईलद्वारे एकाच क्लिकवर लोड करा.</div>
-            </div>
-            <div class="card-btn-group">
-                <a href="{% url 'bulk_upload' %}" class="btn-action btn-upload">📥 एक्सेल फाईल अपलोड करा</a>
-                <a href="{% url 'download_sample_csv' %}" class="btn-action btn-view">सॅम्पल फाईल डाऊनलोड</a>
-            </div>
-        </div>
-
-        <div class="portal-card">
-            <div>
-                <div class="card-icon">🏛️</div>
-                <div class="card-title">शाखा गट (Branches)</div>
-                <div class="card-desc">४ अधिकृत शाखा आणि त्यांच्या Co-Admin शाखा प्रमुखांचे व्यवस्थापन.</div>
-            </div>
-            <div class="card-btn-group">
-                <a href="{% url 'admin:results_branchgroup_add' %}" class="btn-action btn-add">+ शाखा जोडा</a>
-                <a href="{% url 'admin:results_branchgroup_changelist' %}" class="btn-action btn-view">सर्व शाखा</a>
-            </div>
-        </div>
-
-        <div class="portal-card">
-            <div>
-                <div class="card-icon">👥</div>
-                <div class="card-title">सर्व विद्यार्थी / वर्धक</div>
-                <div class="card-desc">सर्व शाखांमधील सर्व विद्यार्थ्यांची माहिती, निकाल व स्थिती.</div>
-            </div>
-            <div class="card-btn-group">
-                <a href="{% url 'admin:results_student_add' %}" class="btn-action btn-add">+ वर्धक जोडा</a>
-                <a href="{% url 'admin:results_student_changelist' %}" class="btn-action btn-view">विद्यार्थी यादी</a>
-            </div>
-        </div>
-
-        <div class="portal-card">
-            <div>
-                <div class="card-icon">🔑</div>
-                <div class="card-title">Co-Admins खाती</div>
-                <div class="card-desc">नवीन शाखा प्रमुखांना स्टाफ लॉगिन अधिकार देणे व पासवर्ड व्यवस्थापन.</div>
-            </div>
-            <div class="card-btn-group">
-                <a href="{% url 'admin:auth_user_add' %}" class="btn-action btn-add">+ नवीन Co-Admin</a>
-                <a href="{% url 'admin:auth_user_changelist' %}" class="btn-action btn-view">युझर यादी</a>
-            </div>
-        </div>
+    <!-- Student Entry -->
+    <div class="app-card" style="border-left: 5px solid #c2410c;">
+        <div class="app-card-title">👨‍🎓 विद्यार्थी नोंदी</div>
+        <div class="app-card-desc">शाखेतील विद्यार्थ्यांचे नाव व रोल नंबर जोडा किंवा बदला.</div>
+        <a href="{% url 'admin:results_student_add' %}" class="app-btn btn-main">+ एक विद्यार्थी जोडा</a>
+        <a href="{% url 'admin:results_student_changelist' %}" class="app-btn btn-outline">सर्व विद्यार्थी यादी</a>
     </div>
 
-    <!-- Co-Admin Live Audit Trail -->
-    {% load log %}
-    {% get_admin_log 10 as admin_log %}
-    <div class="audit-section">
-        <div class="audit-header">
-            <span class="audit-title">📋 Co-Admins द्वारे झालेले ताजे बदल (Recent Audit Log)</span>
-            <span style="font-size: 0.85rem; color: #64748b;">शेवटच्या १० नोंदी</span>
-        </div>
-        {% if admin_log %}
-        <div style="overflow-x: auto;">
-            <table class="audit-table">
-                <thead>
-                    <tr>
-                        <th>तारीख व वेळ</th>
-                        <th>प्रशासक / Co-Admin</th>
-                        <th>क्रिया (Action)</th>
-                        <th>नोंद (Record / Object)</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for entry in admin_log %}
-                    <tr>
-                        <td>{{ entry.action_time|date:"d M Y, h:i A" }}</td>
-                        <td><strong>{{ entry.user.username }}</strong></td>
-                        <td>
-                            {% if entry.is_addition %}
-                                <span class="badge-action badge-add">नवीन नोंद केली</span>
-                            {% elif entry.is_change %}
-                                <span class="badge-action badge-change">बदल केला</span>
-                            {% elif entry.is_deletion %}
-                                <span class="badge-action badge-delete">हटवले</span>
-                            {% endif %}
-                        </td>
-                        <td>{{ entry.object_repr }}</td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
-        {% else %}
-        <p style="color: #64748b; font-size: 0.9rem; margin: 0;">अजून कोणतेही बदल नोंदवले गेलेले नाहीत.</p>
-        {% endif %}
+    <!-- Scores Entry -->
+    <div class="app-card" style="border-left: 5px solid #16a34a;">
+        <div class="app-card-title">📝 गुण नोंदी (Marks)</div>
+        <div class="app-card-desc">सहामाही परीक्षेचे विषयानुसार गुण नोंदवा किंवा तपासा.</div>
+        <a href="{% url 'admin:results_score_add' %}" class="app-btn btn-main" style="background: #16a34a;">+ गुण नोंद करा</a>
+        <a href="{% url 'admin:results_score_changelist' %}" class="app-btn btn-outline">सर्व गुण पहा</a>
     </div>
-    {% endif %}
+
+    <div style="text-align: center; padding: 15px 0;">
+        <a href="{% url 'search_result' %}" style="font-size: 0.88rem; color: #c2410c; font-weight: 700; text-decoration: none;">
+            🌐 मुख्य विद्यार्थी निकाल पोर्टल पहा ➔
+        </a>
+    </div>
 
 </div>
+
+{% else %}
+<!-- ================= DESKTOP VIEW FOR SUPER-ADMIN ================= -->
+<div class="desktop-shell">
+
+    <div style="background: #fff; padding: 18px 24px; border-radius: 12px; border: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+        <div>
+            <h2 style="margin: 0; font-weight: 800; color: #0f172a;">मुख्य प्रशासक नियंत्रण कक्ष (Super-Admin)</h2>
+            <p style="margin: 4px 0 0; color: #64748b; font-size: 0.9rem;">सर्व शाखा, विद्यार्थी, गुण आणि Co-Admin हालचालींचे संपूर्ण नियंत्रण</p>
+        </div>
+        <div>
+            <a href="{% url 'bulk_upload' %}" class="button" style="background: #0284c7 !important; margin-right: 8px;">📥 Bulk Upload</a>
+            <a href="{% url 'admin_analytics' %}" class="button" style="background: #16a34a !important;">📊 Analytics</a>
+        </div>
+    </div>
+
+    <div class="admin-grid">
+        <div class="app-card">
+            <div class="app-card-title">🏛️ शाखा गट (Branches)</div>
+            <div class="app-card-desc">४ शाखा व नियुक्त Co-Admin प्रमुखांचे व्यवस्थापन.</div>
+            <a href="{% url 'admin:results_branchgroup_changelist' %}" class="app-btn btn-outline">शाखा यादी व्यवस्थापन</a>
+        </div>
+        <div class="app-card">
+            <div class="app-card-title">👥 सर्व विद्यार्थी</div>
+            <div class="app-card-desc">सर्व शाखांमधील विद्यार्थ्यांची माहिती.</div>
+            <a href="{% url 'admin:results_student_changelist' %}" class="app-btn btn-outline">विद्यार्थी यादी</a>
+        </div>
+        <div class="app-card">
+            <div class="app-card-title">📊 गुण व निकाल</div>
+            <div class="app-card-desc">सर्व विषयांचे गुण, कमाल व उत्तीर्ण निकष.</div>
+            <a href="{% url 'admin:results_score_changelist' %}" class="app-btn btn-outline">सर्व गुण तपासा</a>
+        </div>
+        <div class="app-card">
+            <div class="app-card-title">🔑 Co-Admin खाती</div>
+            <div class="app-card-desc">शाखा प्रमुखांची लॉगिन खाती व पासवर्ड्स.</div>
+            <a href="{% url 'admin:auth_user_changelist' %}" class="app-btn btn-outline">वापरकर्ते (Users)</a>
+        </div>
+    </div>
+
+    <!-- Live Audit Log -->
+    {% get_admin_log 10 as admin_log %}
+    <div style="background: #fff; border-radius: 12px; border: 1px solid #e2e8f0; padding: 20px;">
+        <h4 style="margin: 0 0 14px 0; font-weight: 700; color: #0f172a;">📋 Co-Admins द्वारे झालेले ताजे बदल (Audit Log)</h4>
+        {% if admin_log %}
+        <table style="width: 100%; border-collapse: collapse; font-size: 0.9rem;">
+            <thead>
+                <tr style="background: #f8fafc; border-bottom: 2px solid #e2e8f0; text-align: left;">
+                    <th style="padding: 10px;">वेळ</th>
+                    <th style="padding: 10px;">वापरकर्ता</th>
+                    <th style="padding: 10px;">क्रिया</th>
+                    <th style="padding: 10px;">नोंद</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for entry in admin_log %}
+                <tr style="border-bottom: 1px solid #f1f5f9;">
+                    <td style="padding: 10px;">{{ entry.action_time|date:"d M, h:i A" }}</td>
+                    <td style="padding: 10px;"><strong>{{ entry.user.username }}</strong></td>
+                    <td style="padding: 10px;">
+                        {% if entry.is_addition %}<span style="color: green; font-weight: bold;">+ नवीन नोंद</span>
+                        {% elif entry.is_change %}<span style="color: #0284c7; font-weight: bold;">✎ बदल</span>
+                        {% elif entry.is_deletion %}<span style="color: red; font-weight: bold;">✕ हटवले</span>{% endif %}
+                    </td>
+                    <td style="padding: 10px;">{{ entry.object_repr }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <p style="color: #64748b; margin: 0;">अद्याप नोंदी उपलब्ध नाहीत.</p>
+        {% endif %}
+    </div>
+
+</div>
+{% endif %}
 {% endblock %}
