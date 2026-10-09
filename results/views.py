@@ -1,28 +1,20 @@
 ﻿import io
 import csv
-import pandas as pd
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.admin.views.decorators import staff_member_required
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib import messages
 from django.http import HttpResponse
-from django.db.models import Avg
 from .models import BranchGroup, Student, Subject, Score
 
 @csrf_exempt
 def search_result(request):
-    """
-    Public student search. Marked csrf_exempt so students/parents
-    never get blocked by CSRF 403 errors on mobile or in-app browsers.
-    Supports both POST and GET query parameters.
-    """
     branches = BranchGroup.objects.all().order_by('name')
     error = None
 
-    # Check both POST and GET
-    branch_id = request.POST.get("branch_group") or request.GET.get("branch_group", "").strip()
-    roll_number = request.POST.get("roll_number") or request.GET.get("roll_number", "").strip()
-    name = request.POST.get("name") or request.GET.get("name", "").strip()
+    branch_id = request.GET.get("branch_group", "").strip() or request.POST.get("branch_group", "").strip()
+    roll_number = request.GET.get("roll_number", "").strip() or request.POST.get("roll_number", "").strip()
+    name = request.GET.get("name", "").strip() or request.POST.get("name", "").strip()
 
     if branch_id and roll_number and name:
         try:
@@ -75,20 +67,19 @@ def bulk_upload_students(request):
             messages.error(request, "तुम्हाला या शाखेमध्ये माहिती भरण्याची परवानगी नाही.")
             return redirect('bulk_upload')
 
+        if not uploaded_file.name.lower().endswith('.csv'):
+            messages.error(request, "कृपया केवळ .csv फाईल अपलोड करा.")
+            return redirect('bulk_upload')
+
         try:
-            file_name = uploaded_file.name.lower()
-            if file_name.endswith('.csv'):
-                df = pd.read_csv(uploaded_file, dtype={'roll_number': str})
-            elif file_name.endswith(('.xlsx', '.xls')):
-                df = pd.read_excel(uploaded_file, dtype={'roll_number': str})
-            else:
-                messages.error(request, "केवळ .xlsx किंवा .csv फॉरमॅट मधील फाईल अपलोड करा.")
-                return redirect('bulk_upload')
+            file_data = uploaded_file.read().decode('utf-8-sig')
+            reader = csv.DictReader(io.StringIO(file_data))
 
-            df.columns = [str(c).strip().lower() for c in df.columns]
+            fieldnames = [f.strip().lower() for f in reader.fieldnames if f]
+            reader.fieldnames = fieldnames
 
-            if 'roll_number' not in df.columns or 'name' not in df.columns:
-                messages.error(request, "फाईलमध्ये 'roll_number' आणि 'name' हे दोन मुख्य कॉलम असणे आवश्यक आहे.")
+            if 'roll_number' not in fieldnames or 'name' not in fieldnames:
+                messages.error(request, "CSV फाईलमध्ये 'roll_number' आणि 'name' हे दोन मुख्य कॉलम असणे आवश्यक आहे.")
                 return redirect('bulk_upload')
 
             db_subjects = {s.name.strip().lower(): s for s in Subject.objects.all()}
@@ -96,16 +87,18 @@ def bulk_upload_students(request):
             records_created = 0
             records_updated = 0
 
-            for _, row in df.iterrows():
-                roll_no = str(row['roll_number']).strip()
-                student_name = str(row['name']).strip()
-                if not roll_no or not student_name or roll_no.lower() == 'nan':
+            for row in reader:
+                roll_no = str(row.get('roll_number', '')).strip()
+                student_name = str(row.get('name', '')).strip()
+                std = str(row.get('standard', '5')).strip()
+
+                if not roll_no or not student_name:
                     continue
 
                 student, created = Student.objects.update_or_create(
                     branch_group=target_branch,
                     roll_number=roll_no,
-                    defaults={'name': student_name}
+                    defaults={'name': student_name, 'standard': std}
                 )
 
                 if created:
@@ -113,27 +106,25 @@ def bulk_upload_students(request):
                 else:
                     records_updated += 1
 
-                for col in df.columns:
-                    if col in ['roll_number', 'name', 'contact_number']:
+                for col, val in row.items():
+                    if col in ['roll_number', 'name', 'standard', 'contact_number']:
                         continue
-                    if col in db_subjects:
-                        raw_marks = row[col]
+                    if col in db_subjects and val and val.strip():
                         try:
-                            if pd.notna(raw_marks):
-                                marks = float(raw_marks)
-                                Score.objects.update_or_create(
-                                    student=student,
-                                    subject=db_subjects[col],
-                                    defaults={'marks_obtained': marks}
-                                )
-                        except (ValueError, TypeError):
+                            marks = float(val.strip())
+                            Score.objects.update_or_create(
+                                student=student,
+                                subject=db_subjects[col],
+                                defaults={'marks_obtained': marks}
+                            )
+                        except ValueError:
                             pass
 
             messages.success(request, f"यशस्वी! {records_created} नवीन विद्यार्थी जोडले गेले व {records_updated} विद्यार्थ्यांचे गुण अपडेट झाले.")
             return redirect('admin:results_student_changelist')
 
         except Exception as e:
-            messages.error(request, f"फाईल प्रोसेस करताना त्रुटी आली: {str(e)}")
+            messages.error(request, f"CSV फाईल वाचताना त्रुटी आली: {str(e)}")
             return redirect('bulk_upload')
 
     return render(request, "admin/bulk_upload.html", {
@@ -149,37 +140,35 @@ def download_sample_csv(request):
     
     writer = csv.writer(response)
     subjects = [s.name for s in Subject.objects.all()]
-    header = ['roll_number', 'name'] + subjects
+    header = ['roll_number', 'name', 'standard'] + subjects
     writer.writerow(header)
     
-    sample_row = ['101', 'राहुल सुरेश शर्मा'] + ['35' for _ in subjects]
+    sample_row = ['101', 'राहुल सुरेश शर्मा', '5'] + ['35' for _ in subjects]
     writer.writerow(sample_row)
     
     return response
 
 @staff_member_required
 def admin_analytics(request):
-    students = Student.objects.prefetch_related('scores__subject', 'branch_group').all()
-    if not request.user.is_superuser:
-        students = students.filter(branch_group__co_admin=request.user)
+    """
+    Mobile-First Analytics:
+    All Co-Admins and Super-Admins have full visibility across all branches and standards.
+    """
+    students_qs = Student.objects.select_related('branch_group').prefetch_related('scores__subject').all()
+    all_students = list(students_qs)
+    
+    # Sort descending by percentage
+    sorted_all = sorted(all_students, key=lambda s: s.percentage, reverse=True)
+    top_5_students = sorted_all[:5]
 
-    students = list(students)
-    total_students = len(students)
-    passed_students = [s for s in students if s.is_passed]
-    pass_percentage = round((len(passed_students) / total_students * 100), 2) if total_students > 0 else 0
+    branches = BranchGroup.objects.all().order_by('name')
+    standards = ['5', '6', '7', '8', '9', '10']
 
-    avg_score = Score.objects.filter(
-        student__in=students
-    ).aggregate(avg=Avg('marks_obtained'))['avg'] or 0
-
-    sorted_students = sorted(students, key=lambda s: s.percentage, reverse=True)
-    toppers = sorted_students[:5]
-    at_risk = [s for s in sorted_students if not s.is_passed or s.percentage < 40]
-
-    return render(request, "results/analytics.html", {
-        "total_students": total_students,
-        "pass_percentage": pass_percentage,
-        "avg_score": round(avg_score, 2),
-        "toppers": toppers,
-        "at_risk": at_risk,
-    })
+    context = {
+        "top_5": top_5_students,
+        "students": sorted_all,
+        "branches": branches,
+        "standards": standards,
+        "total_count": len(all_students),
+    }
+    return render(request, "results/analytics.html", context)

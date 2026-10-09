@@ -3,7 +3,6 @@
 
 {% block content %}
 <style>
-    /* Mobile-App Cards for Co-Admin */
     .app-card {
         background: #ffffff;
         border-radius: 14px;
@@ -47,9 +46,9 @@
     .app-btn:last-child { margin-bottom: 0; }
     .btn-main { background: #c2410c; color: #ffffff !important; }
     .btn-upload { background: #0284c7; color: #ffffff !important; }
+    .btn-analytics { background: #059669; color: #ffffff !important; }
     .btn-outline { background: #f8fafc; color: #334155 !important; border: 1px solid #cbd5e1; }
 
-    /* Super-Admin Desktop Grid */
     .admin-grid {
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
@@ -67,6 +66,13 @@
         <span style="font-size: 0.78rem; font-weight: 700; color: #92400e; text-transform: uppercase;">शाखा समन्वयक कक्ष</span>
         <h3 style="margin: 4px 0; font-size: 1.25rem; font-weight: 800; color: #7c2d12;">{{ request.user.username }}</h3>
         <p style="margin: 0; font-size: 0.85rem; color: #b45309;">तुमच्या शाखेचे निकाल व नोंदी व्यवस्थापन</p>
+    </div>
+
+    <!-- Quick Action: View All Analytics -->
+    <div class="app-card" style="border-left: 5px solid #059669;">
+        <div class="app-card-title">📊 निकाल विश्लेषण (Analytics)</div>
+        <div class="app-card-desc">सर्व शाखांचे निकाल, इयत्तानिहाय फिल्टर्स व टॉप ५ गुणवंत यादी पहा.</div>
+        <a href="{% url 'admin_analytics' %}" class="app-btn btn-analytics">📈 सर्व शाखा विश्लेषण अहवाल उघडा ➔</a>
     </div>
 
     <!-- Quick Action: Bulk Upload -->
@@ -112,7 +118,7 @@
         </div>
         <div>
             <a href="{% url 'bulk_upload' %}" class="button" style="background: #0284c7 !important; margin-right: 8px;">📥 Bulk Upload</a>
-            <a href="{% url 'admin_analytics' %}" class="button" style="background: #16a34a !important;">📊 Analytics</a>
+            <a href="{% url 'admin_analytics' %}" class="button" style="background: #059669 !important;">📊 निकाल विश्लेषण (Analytics)</a>
         </div>
     </div>
 

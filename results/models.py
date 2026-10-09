@@ -21,6 +21,15 @@ class BranchGroup(models.Model):
         return self.name
 
 class Student(models.Model):
+    STANDARD_CHOICES = [
+        ('5', '५ वी (5th Standard)'),
+        ('6', '६ वी (6th Standard)'),
+        ('7', '७ वी (7th Standard)'),
+        ('8', '८ वी (8th Standard)'),
+        ('9', '९ वी (9th Standard)'),
+        ('10', '१० वी (10th Standard)'),
+    ]
+
     branch_group = models.ForeignKey(
         BranchGroup, 
         on_delete=models.CASCADE, 
@@ -31,6 +40,12 @@ class Student(models.Model):
     )
     name = models.CharField(max_length=150, verbose_name="वर्धक नाव (Student Name)")
     roll_number = models.CharField(max_length=50, verbose_name="Roll Number")
+    standard = models.CharField(
+        max_length=10, 
+        choices=STANDARD_CHOICES, 
+        default='5', 
+        verbose_name="इयत्ता (Standard)"
+    )
     contact_number = models.CharField(max_length=15, blank=True, null=True, verbose_name="संपर्क क्रमांक")
 
     class Meta:
@@ -40,7 +55,7 @@ class Student(models.Model):
 
     def __str__(self):
         branch = self.branch_group.name if self.branch_group else "No Branch"
-        return f"{self.name} (Roll: {self.roll_number}) - {branch}"
+        return f"{self.name} (इ. {self.standard} वी | Roll: {self.roll_number}) - {branch}"
 
     @property
     def total_marks_obtained(self):

@@ -1,79 +1,448 @@
-﻿<!DOCTYPE html>
-<html lang="en">
+﻿{% load static %}
+<!DOCTYPE html>
+<html lang="mr">
 <head>
     <meta charset="UTF-8">
-    <title>NGO Exam Analytics Dashboard</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>‘स्व‘-रूपवर्धिनी - निकाल विश्लेषण (Analytics)</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Devanagari:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --brand-primary: #c2410c;
+            --brand-dark: #7c2d12;
+            --brand-gold: #f59e0b;
+            --bg-color: #f8fafc;
+        }
+
+        body {
+            font-family: 'Noto Sans Devanagari', -apple-system, sans-serif;
+            background-color: var(--bg-color);
+            margin: 0;
+            padding: 0;
+            color: #0f172a;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .mobile-shell {
+            max-width: 480px;
+            margin: 0 auto;
+            padding: 12px 12px 90px 12px;
+        }
+
+        /* Top Mobile Header Card */
+        .mobile-header-card {
+            background: #ffffff;
+            border-radius: 16px;
+            padding: 16px;
+            text-align: center;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+            margin-bottom: 16px;
+        }
+
+        .ngo-logo-sm {
+            max-height: 50px;
+            width: auto;
+            margin-bottom: 8px;
+        }
+
+        /* Horizontal Swipe Carousel for Top 5 Toppers */
+        .carousel-title {
+            font-size: 1rem;
+            font-weight: 800;
+            color: #9a3412;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin: 0 0 8px 4px;
+        }
+
+        .topper-carousel {
+            display: flex;
+            gap: 12px;
+            overflow-x: auto;
+            padding-bottom: 8px;
+            scroll-snap-type: x mandatory;
+            -webkit-overflow-scrolling: touch;
+            scrollbar-width: none;
+        }
+        .topper-carousel::-webkit-scrollbar { display: none; }
+
+        .topper-card {
+            flex: 0 0 220px;
+            scroll-snap-align: start;
+            background: #ffffff;
+            border-radius: 16px;
+            padding: 16px 14px;
+            text-align: center;
+            border: 2px solid #e2e8f0;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+            position: relative;
+        }
+
+        .rank-gold { border-color: #f59e0b; background: linear-gradient(180deg, #fffbeb 0%, #ffffff 100%); }
+        .rank-silver { border-color: #94a3b8; background: linear-gradient(180deg, #f8fafc 0%, #ffffff 100%); }
+        .rank-bronze { border-color: #d97706; background: linear-gradient(180deg, #fff7ed 0%, #ffffff 100%); }
+
+        .rank-badge {
+            display: inline-block;
+            font-weight: 800;
+            font-size: 0.72rem;
+            padding: 3px 10px;
+            border-radius: 20px;
+            margin-bottom: 6px;
+        }
+        .badge-gold { background: #fef3c7; color: #b45309; border: 1px solid #fcd34d; }
+        .badge-silver { background: #f1f5f9; color: #475569; border: 1px solid #cbd5e1; }
+        .badge-bronze { background: #ffedd5; color: #c2410c; border: 1px solid #fed7aa; }
+        .badge-other { background: #f3f4f6; color: #4b5563; }
+
+        .topper-name {
+            font-size: 0.95rem;
+            font-weight: 800;
+            color: #0f172a;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .topper-meta {
+            font-size: 0.75rem;
+            color: #64748b;
+            margin-bottom: 8px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .topper-pct-badge {
+            background: #9a3412;
+            color: #ffffff;
+            font-weight: 800;
+            font-size: 1.15rem;
+            padding: 4px 10px;
+            border-radius: 8px;
+            display: inline-block;
+        }
+
+        /* Mobile Filter Card */
+        .filter-mobile-box {
+            background: #ffffff;
+            border-radius: 16px;
+            border: 1px solid #cbd5e1;
+            padding: 16px;
+            margin-bottom: 16px;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.03);
+        }
+
+        .filter-label {
+            font-size: 0.8rem;
+            font-weight: 700;
+            color: #475569;
+            margin-bottom: 4px;
+            display: block;
+        }
+
+        .filter-select, .filter-input {
+            width: 100%;
+            padding: 10px 12px;
+            border-radius: 10px;
+            border: 1px solid #cbd5e1;
+            font-size: 0.9rem;
+            margin-bottom: 12px;
+            background-color: #f8fafc;
+            color: #1e293b;
+        }
+        .filter-select:focus, .filter-input:focus {
+            background: #ffffff;
+            border-color: #c2410c;
+            outline: none;
+        }
+
+        /* Mobile Student Result Card */
+        .student-result-card {
+            background: #ffffff;
+            border-radius: 14px;
+            border: 1px solid #e2e8f0;
+            padding: 14px;
+            margin-bottom: 10px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+            transition: all 0.15s ease;
+        }
+
+        .status-pill {
+            font-size: 0.72rem;
+            font-weight: 700;
+            padding: 3px 8px;
+            border-radius: 6px;
+        }
+        .status-pass { background: #dcfce7; color: #15803d; }
+        .status-fail { background: #fee2e2; color: #b91c1c; }
+
+        /* Floating Bottom Action Bar */
+        .bottom-action-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: #ffffff;
+            border-top: 1px solid #e2e8f0;
+            padding: 10px 16px;
+            display: flex;
+            justify-content: center;
+            box-shadow: 0 -4px 10px rgba(0, 0, 0, 0.05);
+            z-index: 1000;
+        }
+
+        .bottom-inner {
+            max-width: 480px;
+            width: 100%;
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn-export-csv {
+            background: #059669;
+            color: #ffffff;
+            font-weight: 700;
+            font-size: 0.92rem;
+            border: none;
+            padding: 12px;
+            border-radius: 10px;
+            flex: 2;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+
+        .btn-nav-back {
+            background: #f1f5f9;
+            color: #334155;
+            font-weight: 700;
+            font-size: 0.92rem;
+            border: 1px solid #cbd5e1;
+            padding: 12px;
+            border-radius: 10px;
+            text-align: center;
+            text-decoration: none;
+            flex: 1;
+        }
+    </style>
 </head>
-<body class="bg-light py-4">
-<div class="container">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2 class="fw-bold text-dark">NGO Exam Performance Tracking</h2>
-        <a href="/admin/" class="btn btn-outline-primary btn-sm">Go to Admin Panel</a>
-    </div>
+<body>
 
-    <div class="row g-3 mb-4">
-        <div class="col-md-4">
-            <div class="card p-3 shadow-sm text-center border-primary">
-                <div class="text-muted small">Total Students</div>
-                <h3 class="fw-bold text-primary">{{ total_students }}</h3>
-            </div>
-        </div>
-        <div class="col-md-4">
-            <div class="card p-3 shadow-sm text-center border-success">
-                <div class="text-muted small">Overall Pass %</div>
-                <h3 class="fw-bold text-success">{{ pass_percentage }}%</h3>
-            </div>
-        </div>
-        <div class="col-md-4">
-            <div class="card p-3 shadow-sm text-center border-info">
-                <div class="text-muted small">Average Score</div>
-                <h3 class="fw-bold text-info">{{ avg_score }}</h3>
-            </div>
+<div class="mobile-shell">
+
+    <!-- Header Section -->
+    <div class="mobile-header-card">
+        <img src="{% static 'results/swaroop_header.png' %}" alt="‘स्व‘-रूपवर्धिनी" class="ngo-logo-sm">
+        <h4 style="margin: 0; font-weight: 800; font-size: 1.15rem; color: #7c2d12;">निकाल विश्लेषण व गुणवत्ता कक्ष</h4>
+        <div style="font-size: 0.78rem; color: #b45309; font-weight: 700; margin-top: 2px;">
+            सर्व शाखा व इयत्तानिहाय निकाल अहवाल (Mobile Analytics)
         </div>
     </div>
 
-    <div class="row g-4">
-        <div class="col-md-6">
-            <div class="card shadow-sm h-100">
-                <div class="card-header bg-success text-white fw-bold">Top Performing Students (Toppers)</div>
-                <div class="card-body p-0">
-                    <ul class="list-group list-group-flush">
-                        {% for t in toppers %}
-                        <li class="list-group-item d-flex justify-content-between align-items-center">
-                            <div>
-                                <strong>#{{ forloop.counter }} {{ t.name }}</strong> (Roll: {{ t.roll_number }})
-                            </div>
-                            <span class="badge bg-success rounded-pill">{{ t.percentage }}%</span>
-                        </li>
-                        {% empty %}
-                        <li class="list-group-item text-muted text-center py-3">No data recorded yet.</li>
-                        {% endfor %}
-                    </ul>
-                </div>
+    <!-- ================= TOP 5 CAROUSEL ================= -->
+    <div class="carousel-title">
+        <span>🏆 टॉप ५ गुणवंत (All Shakhas)</span>
+        <span style="font-size: 0.72rem; color: #64748b; font-weight: 600;">डावीकडे स्वाइप करा ➔</span>
+    </div>
+
+    <div class="topper-carousel">
+        {% for topper in top_5 %}
+        <div class="topper-card {% if forloop.counter == 1 %}rank-gold{% elif forloop.counter == 2 %}rank-silver{% elif forloop.counter == 3 %}rank-bronze{% endif %}">
+            
+            {% if forloop.counter == 1 %}
+                <span class="rank-badge badge-gold">🥇 क्रमांक १ (Rank #1)</span>
+            {% elif forloop.counter == 2 %}
+                <span class="rank-badge badge-silver">🥈 क्रमांक २ (Rank #2)</span>
+            {% elif forloop.counter == 3 %}
+                <span class="rank-badge badge-bronze">🥉 क्रमांक ३ (Rank #3)</span>
+            {% else %}
+                <span class="rank-badge badge-other">🎖️ क्रमांक {{ forloop.counter }}</span>
+            {% endif %}
+
+            <div class="topper-name" title="{{ topper.name }}">{{ topper.name }}</div>
+            <div class="topper-meta">
+                <strong>इ. {{ topper.standard }} वी</strong> | {{ topper.branch_group.name }}
             </div>
+
+            <div class="topper-pct-badge">
+                {{ topper.percentage }}%
+            </div>
+            
+            <div style="font-size: 0.72rem; color: #64748b; margin-top: 4px;">
+                एकूण: {{ topper.total_marks_obtained }}/{{ topper.total_max_marks }} ({{ topper.overall_grade }})
+            </div>
+        </div>
+        {% empty %}
+        <div style="padding: 10px; color: #64748b; font-size: 0.85rem;">कोणतीही नोंद आढळली नाही.</div>
+        {% endfor %}
+    </div>
+
+    <!-- ================= MOBILE EXCEL-LIKE FILTERS ================= -->
+    <div class="filter-mobile-box mt-3">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+            <span style="font-weight: 800; font-size: 0.95rem; color: #0f172a;">⚡ जलद फिल्टर (Excel Filter)</span>
+            <button onclick="resetFilters()" style="background: none; border: none; color: #c2410c; font-weight: 700; font-size: 0.78rem;">
+                🔄 रिसेट
+            </button>
         </div>
 
-        <div class="col-md-6">
-            <div class="card shadow-sm h-100">
-                <div class="card-header bg-danger text-white fw-bold">Students Needing Remedial Support</div>
-                <div class="card-body p-0">
-                    <ul class="list-group list-group-flush">
-                        {% for r in at_risk %}
-                        <li class="list-group-item d-flex justify-content-between align-items-center">
-                            <div>
-                                <strong>{{ r.name }}</strong> (Roll: {{ r.roll_number }})
-                            </div>
-                            <span class="badge bg-danger rounded-pill">{{ r.percentage }}%</span>
-                        </li>
-                        {% empty %}
-                        <li class="list-group-item text-muted text-center py-3">No at-risk students found!</li>
-                        {% endfor %}
-                    </ul>
+        <!-- Shakha Filter -->
+        <label class="filter-label">🏛️ शाखा निवडा:</label>
+        <select id="branchFilter" class="filter-select" onchange="applyFilters()">
+            <option value="ALL">-- सर्व शाखा (All Branches) --</option>
+            {% for b in branches %}
+            <option value="{{ b.name }}">{{ b.name }}</option>
+            {% endfor %}
+        </select>
+
+        <!-- Standard Filter -->
+        <label class="filter-label">🎓 इयत्ता निवडा:</label>
+        <select id="standardFilter" class="filter-select" onchange="applyFilters()">
+            <option value="ALL">-- सर्व इयत्ता (All Standards) --</option>
+            {% for std in standards %}
+            <option value="{{ std }}">इयत्ता {{ std }} वी</option>
+            {% endfor %}
+        </select>
+
+        <!-- Status Filter -->
+        <label class="filter-label">📋 निकाल स्थिती:</label>
+        <select id="statusFilter" class="filter-select" onchange="applyFilters()">
+            <option value="ALL">सर्व स्थिती (All Results)</option>
+            <option value="PASS">केवळ उत्तीर्ण (Pass Only)</option>
+            <option value="FAIL">सुधारणा आवश्यक (Needs Attention)</option>
+        </select>
+
+        <!-- Search Bar -->
+        <label class="filter-label">🔍 नाव किंवा रोल नंबर शोधा:</label>
+        <input type="text" id="searchFilter" class="filter-input" placeholder="नाव किंवा Roll No टाईप करा..." onkeyup="applyFilters()">
+
+        <div style="font-size: 0.8rem; color: #64748b; text-align: right; font-weight: 600;">
+            एकूण विद्यार्थी: <strong id="recordCount" style="color: #c2410c;">{{ total_count }}</strong>
+        </div>
+    </div>
+
+    <!-- ================= STUDENT CARDS LIST ================= -->
+    <div id="studentContainer">
+        {% for s in students %}
+        <div class="student-result-card student-row"
+             data-branch="{{ s.branch_group.name }}" 
+             data-standard="{{ s.standard }}" 
+             data-status="{% if s.is_passed %}PASS{% else %}FAIL{% endif %}"
+             data-name="{{ s.name|lower }}"
+             data-roll="{{ s.roll_number }}">
+            
+            <div class="d-flex justify-content-between align-items-start">
+                <div>
+                    <span class="badge bg-light text-dark border me-1" style="font-size: 0.72rem;">Roll: {{ s.roll_number }}</span>
+                    <span class="badge bg-warning text-dark" style="font-size: 0.72rem;">इ. {{ s.standard }} वी</span>
+                    <h6 class="fw-bold text-dark mt-1 mb-0" style="font-size: 0.98rem;">{{ s.name }}</h6>
+                </div>
+                <div class="text-end">
+                    <div class="fw-bold fs-6" style="color: #9a3412;">{{ s.percentage }}%</div>
+                    <span class="status-pill {% if s.is_passed %}status-pass{% else %}status-fail{% endif %}">
+                        {% if s.is_passed %}उत्तीर्ण ({{ s.overall_grade }}){% else %}सुधारणा आवश्यक{% endif %}
+                    </span>
                 </div>
             </div>
+
+            <div class="d-flex justify-content-between align-items-center mt-2 pt-2 border-top" style="font-size: 0.78rem;">
+                <span class="text-muted">{{ s.branch_group.name }}</span>
+                <a href="{% url 'view_report_card' s.id %}" target="_blank" style="color: #0284c7; font-weight: 700; text-decoration: none;">
+                    गुणपत्रिका पहा ➔
+                </a>
+            </div>
+
         </div>
+        {% empty %}
+        <div class="text-center py-4 text-muted">कोणतीही नोंद उपलब्ध नाही.</div>
+        {% endfor %}
+    </div>
+
+</div>
+
+<!-- Fixed Mobile Bottom Action Bar -->
+<div class="bottom-action-bar">
+    <div class="bottom-inner">
+        <a href="{% url 'admin:index' %}" class="btn-nav-back">← डॅशबोर्ड</a>
+        <button onclick="exportToCSV()" class="btn-export-csv">
+            📥 फिल्टर CSV डाउनलोड
+        </button>
     </div>
 </div>
+
+<!-- Interactive Javascript Engine -->
+<script>
+    function applyFilters() {
+        const branchVal = document.getElementById('branchFilter').value;
+        const standardVal = document.getElementById('standardFilter').value;
+        const statusVal = document.getElementById('statusFilter').value;
+        const searchVal = document.getElementById('searchFilter').value.toLowerCase().trim();
+
+        const cards = document.querySelectorAll('.student-row');
+        let visibleCount = 0;
+
+        cards.forEach(card => {
+            const rowBranch = card.getAttribute('data-branch');
+            const rowStandard = card.getAttribute('data-standard');
+            const rowStatus = card.getAttribute('data-status');
+            const rowName = card.getAttribute('data-name');
+            const rowRoll = card.getAttribute('data-roll');
+
+            let matchesBranch = (branchVal === 'ALL' || rowBranch === branchVal);
+            let matchesStandard = (standardVal === 'ALL' || rowStandard === standardVal);
+            let matchesStatus = (statusVal === 'ALL' || rowStatus === statusVal);
+            let matchesSearch = (!searchVal || rowName.includes(searchVal) || rowRoll.includes(searchVal));
+
+            if (matchesBranch && matchesStandard && matchesStatus && matchesSearch) {
+                card.style.display = '';
+                visibleCount++;
+            } else {
+                card.style.display = 'none';
+            }
+        });
+
+        document.getElementById('recordCount').innerText = visibleCount;
+    }
+
+    function resetFilters() {
+        document.getElementById('branchFilter').value = 'ALL';
+        document.getElementById('standardFilter').value = 'ALL';
+        document.getElementById('statusFilter').value = 'ALL';
+        document.getElementById('searchFilter').value = '';
+        applyFilters();
+    }
+
+    function exportToCSV() {
+        const cards = document.querySelectorAll('.student-row');
+        let csvContent = "\uFEFF"; // UTF-8 BOM for Devanagari in Excel
+        csvContent += "Roll Number,Student Name,Standard,Branch,Status\r\n";
+
+        cards.forEach(card => {
+            if (card.style.display !== 'none') {
+                const roll = card.getAttribute('data-roll');
+                const name = card.querySelector('h6').innerText.replace(/"/g, '""');
+                const std = card.getAttribute('data-standard');
+                const branch = card.getAttribute('data-branch');
+                const status = card.getAttribute('data-status');
+
+                csvContent += `"${roll}","${name}","इ. ${std} वी","${branch}","${status}"\r\n`;
+            }
+        });
+
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement("a");
+        link.href = URL.createObjectURL(blob);
+        link.download = `Swaroopwardhinee_Filtered_Analytics.csv`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    }
+</script>
+
 </body>
 </html>
