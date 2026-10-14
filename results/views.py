@@ -5,7 +5,7 @@ from django.contrib.admin.views.decorators import staff_member_required
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib import messages
 from django.http import HttpResponse
-from .models import BranchGroup, Student, Subject, Score
+from .models import BranchGroup, Student, Subject, Score, STANDARD_SUBJECT_RULES
 
 @csrf_exempt
 def search_result(request):
@@ -82,7 +82,31 @@ def bulk_upload_students(request):
                 messages.error(request, "CSV फाईलमध्ये 'roll_number' आणि 'name' हे दोन मुख्य कॉलम असणे आवश्यक आहे.")
                 return redirect('bulk_upload')
 
-            db_subjects = {s.name.strip().lower(): s for s in Subject.objects.all()}
+            # विषयांचे डेटाबेस मॉडेल तयार किंवा मिळवा
+            subject_alias_map = {
+                'english': 'english',
+                'इंग्रजी': 'english',
+                'mathematics': 'mathematics',
+                'गणित': 'mathematics',
+                'science': 'science',
+                'विज्ञान': 'science',
+                'mathematics_1': 'mathematics_1',
+                'mathematics 1': 'mathematics_1',
+                'm1': 'mathematics_1',
+                'गणित १': 'mathematics_1',
+                'mathematics_2': 'mathematics_2',
+                'mathematics 2': 'mathematics_2',
+                'm2': 'mathematics_2',
+                'गणित २': 'mathematics_2',
+                'science_1': 'science_1',
+                'science 1': 'science_1',
+                's1': 'science_1',
+                'विज्ञान १': 'science_1',
+                'science_2': 'science_2',
+                'science 2': 'science_2',
+                's2': 'science_2',
+                'विज्ञान २': 'science_2',
+            }
 
             records_created = 0
             records_updated = 0
@@ -106,15 +130,24 @@ def bulk_upload_students(request):
                 else:
                     records_updated += 1
 
+                # विषयांचे गुण नोंदवणे
                 for col, val in row.items():
                     if col in ['roll_number', 'name', 'standard', 'contact_number']:
                         continue
-                    if col in db_subjects and val and val.strip():
+                    clean_col = col.strip().lower()
+                    canonical_key = subject_alias_map.get(clean_col)
+
+                    if canonical_key and val and val.strip():
                         try:
                             marks = float(val.strip())
+                            # विषयाचे नाव ठरवा
+                            subj_obj, _ = Subject.objects.get_or_create(
+                                code=canonical_key,
+                                defaults={'name': canonical_key.replace('_', ' ').title()}
+                            )
                             Score.objects.update_or_create(
                                 student=student,
-                                subject=db_subjects[col],
+                                subject=subj_obj,
                                 defaults={'marks_obtained': marks}
                             )
                         except ValueError:
@@ -134,30 +167,41 @@ def bulk_upload_students(request):
 
 @staff_member_required
 def download_sample_csv(request):
+    """
+    सर्व इयत्तांच्या निकषांनुसार सॅम्पल CSV तयार करते.
+    ५ वी ते ८ वी साठी English, Mathematics, Science
+    ९ वी व १० वी साठी English, Mathematics_1, Mathematics_2, Science_1, Science_2
+    """
     response = HttpResponse(content_type='text/csv; charset=utf-8')
     response['Content-Disposition'] = 'attachment; filename="student_marks_template.csv"'
     response.write('\ufeff'.encode('utf8'))
     
     writer = csv.writer(response)
-    subjects = [s.name for s in Subject.objects.all()]
-    header = ['roll_number', 'name', 'standard'] + subjects
+    header = [
+        'roll_number', 'name', 'standard',
+        'english', 'mathematics', 'science',
+        'mathematics_1', 'mathematics_2', 'science_1', 'science_2'
+    ]
     writer.writerow(header)
     
-    sample_row = ['101', 'राहुल सुरेश शर्मा', '5'] + ['35' for _ in subjects]
-    writer.writerow(sample_row)
+    # ५ वी चा सॅम्पल
+    writer.writerow(['101', 'राहुल शर्मा (५ वी)', '5', '35', '38', '36', '', '', '', ''])
+    # ९ वी चा सॅम्पल (M1, M2, S1, S2 सह)
+    writer.writerow(['201', 'अनिकेत पाटील (९ वी)', '9', '72', '', '', '32', '35', '36', '38'])
+    # १० वी चा सॅम्पल
+    writer.writerow(['301', 'स्नेहल जोशी (१० वी)', '10', '75', '', '', '38', '39', '38', '37'])
     
     return response
 
 @staff_member_required
 def admin_analytics(request):
     """
-    Mobile-First Analytics:
-    All Co-Admins and Super-Admins have full visibility across all branches and standards.
+    नव्या निकषांनुसार सर्व शाखांमधून टॉप ५ गुणवंत व इयत्तानिहाय निकाल
     """
     students_qs = Student.objects.select_related('branch_group').prefetch_related('scores__subject').all()
     all_students = list(students_qs)
     
-    # Sort descending by percentage
+    # अचूक टक्केवारीनुसार टॉप ५ विद्यार्थी काढणे
     sorted_all = sorted(all_students, key=lambda s: s.percentage, reverse=True)
     top_5_students = sorted_all[:5]
 

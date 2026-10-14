@@ -30,7 +30,6 @@
             padding: 12px 12px 90px 12px;
         }
 
-        /* Top Mobile Header Card */
         .mobile-header-card {
             background: #ffffff;
             border-radius: 16px;
@@ -47,7 +46,6 @@
             margin-bottom: 8px;
         }
 
-        /* Horizontal Swipe Carousel for Top 5 Toppers */
         .carousel-title {
             font-size: 1rem;
             font-weight: 800;
@@ -126,7 +124,6 @@
             display: inline-block;
         }
 
-        /* Mobile Filter Card */
         .filter-mobile-box {
             background: #ffffff;
             border-radius: 16px;
@@ -160,7 +157,6 @@
             outline: none;
         }
 
-        /* Mobile Student Result Card */
         .student-result-card {
             background: #ffffff;
             border-radius: 14px;
@@ -180,7 +176,6 @@
         .status-pass { background: #dcfce7; color: #15803d; }
         .status-fail { background: #fee2e2; color: #b91c1c; }
 
-        /* Floating Bottom Action Bar */
         .bottom-action-bar {
             position: fixed;
             bottom: 0;
@@ -235,12 +230,12 @@
 
 <div class="mobile-shell">
 
-    <!-- Header Section -->
+    <!-- Header -->
     <div class="mobile-header-card">
         <img src="{% static 'results/swaroop_header.png' %}" alt="‘स्व‘-रूपवर्धिनी" class="ngo-logo-sm">
         <h4 style="margin: 0; font-weight: 800; font-size: 1.15rem; color: #7c2d12;">निकाल विश्लेषण व गुणवत्ता कक्ष</h4>
         <div style="font-size: 0.78rem; color: #b45309; font-weight: 700; margin-top: 2px;">
-            सर्व शाखा व इयत्तानिहाय निकाल अहवाल (Mobile Analytics)
+            नवीन निकषांनुसार निकाल अहवाल (५ वी ते १० वी)
         </div>
     </div>
 
@@ -282,7 +277,7 @@
         {% endfor %}
     </div>
 
-    <!-- ================= MOBILE EXCEL-LIKE FILTERS ================= -->
+    <!-- ================= MOBILE FILTERS ================= -->
     <div class="filter-mobile-box mt-3">
         <div class="d-flex justify-content-between align-items-center mb-2">
             <span style="font-weight: 800; font-size: 0.95rem; color: #0f172a;">⚡ जलद फिल्टर (Excel Filter)</span>
@@ -344,9 +339,12 @@
                 </div>
                 <div class="text-end">
                     <div class="fw-bold fs-6" style="color: #9a3412;">{{ s.percentage }}%</div>
-                    <span class="status-pill {% if s.is_passed %}status-pass{% else %}status-fail{% endif %}">
-                        {% if s.is_passed %}उत्तीर्ण ({{ s.overall_grade }}){% else %}सुधारणा आवश्यक{% endif %}
-                    </span>
+                    <small class="text-muted" style="font-size: 0.75rem;">{{ s.total_marks_obtained }}/{{ s.total_max_marks }}</small>
+                    <div>
+                        <span class="status-pill {% if s.is_passed %}status-pass{% else %}status-fail{% endif %}">
+                            {% if s.is_passed %}उत्तीर्ण ({{ s.overall_grade }}){% else %}सुधारणा आवश्यक{% endif %}
+                        </span>
+                    </div>
                 </div>
             </div>
 
@@ -365,7 +363,7 @@
 
 </div>
 
-<!-- Fixed Mobile Bottom Action Bar -->
+<!-- Bottom Action Bar -->
 <div class="bottom-action-bar">
     <div class="bottom-inner">
         <a href="{% url 'admin:index' %}" class="btn-nav-back">← डॅशबोर्ड</a>
@@ -375,7 +373,6 @@
     </div>
 </div>
 
-<!-- Interactive Javascript Engine -->
 <script>
     function applyFilters() {
         const branchVal = document.getElementById('branchFilter').value;
@@ -419,8 +416,8 @@
 
     function exportToCSV() {
         const cards = document.querySelectorAll('.student-row');
-        let csvContent = "\uFEFF"; // UTF-8 BOM for Devanagari in Excel
-        csvContent += "Roll Number,Student Name,Standard,Branch,Status\r\n";
+        let csvContent = "\uFEFF"; 
+        csvContent += "Roll Number,Student Name,Standard,Branch,Percentage,Status\r\n";
 
         cards.forEach(card => {
             if (card.style.display !== 'none') {
@@ -428,16 +425,17 @@
                 const name = card.querySelector('h6').innerText.replace(/"/g, '""');
                 const std = card.getAttribute('data-standard');
                 const branch = card.getAttribute('data-branch');
+                const pct = card.querySelector('.fs-6').innerText.trim();
                 const status = card.getAttribute('data-status');
 
-                csvContent += `"${roll}","${name}","इ. ${std} वी","${branch}","${status}"\r\n`;
+                csvContent += `"${roll}","${name}","इ. ${std} वी","${branch}","${pct}","${status}"\r\n`;
             }
         });
 
         const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
         const link = document.createElement("a");
         link.href = URL.createObjectURL(blob);
-        link.download = `Swaroopwardhinee_Filtered_Analytics.csv`;
+        link.download = `Swaroopwardhinee_Result_Report.csv`;
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
