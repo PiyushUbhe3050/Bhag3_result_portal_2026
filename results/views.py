@@ -5,13 +5,36 @@ from django.contrib.admin.views.decorators import staff_member_required
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib import messages
 from django.http import HttpResponse
-from .models import BranchGroup, Student, Subject, Score, STANDARD_SUBJECT_RULES
+from .models import BranchGroup, Student, Subject, Score
 
 @csrf_exempt
 def search_result(request):
     branches = BranchGroup.objects.all().order_by('name')
     error = None
 
+    # इयत्ता ५ वी ते १० वी मधील प्रत्येक इयत्तेचा १ अव्वल विद्यार्थी (Top 6 Toppers)
+    standard_list = ['5', '6', '7', '8', '9', '10']
+    standard_toppers = []
+
+    # कार्यक्षमता सुधारण्यासाठी सर्व विद्यार्थी एकाच क्वेरीमध्ये आणणे
+    all_students = list(Student.objects.select_related('branch_group').prefetch_related('scores__subject').all())
+
+    for std in standard_list:
+        std_students = [s for s in all_students if str(s.standard).strip() == std and s.scores.exists()]
+        if std_students:
+            # टक्केवारीनुसार उतरत्या क्रमाने लावून प्रथम क्रमांकाचा विद्यार्थी निवडणे
+            top_student = max(std_students, key=lambda s: s.percentage)
+            standard_toppers.append({
+                'standard': std,
+                'student': top_student
+            })
+        else:
+            standard_toppers.append({
+                'standard': std,
+                'student': None
+            })
+
+    # निकाल शोधणे (POST किंवा GET)
     branch_id = request.GET.get("branch_group", "").strip() or request.POST.get("branch_group", "").strip()
     roll_number = request.GET.get("roll_number", "").strip() or request.POST.get("roll_number", "").strip()
     name = request.GET.get("name", "").strip() or request.POST.get("name", "").strip()
@@ -29,6 +52,7 @@ def search_result(request):
 
     return render(request, "results/search.html", {
         "branches": branches,
+        "standard_toppers": standard_toppers,
         "error": error
     })
 
@@ -82,7 +106,6 @@ def bulk_upload_students(request):
                 messages.error(request, "CSV फाईलमध्ये 'roll_number' आणि 'name' हे दोन मुख्य कॉलम असणे आवश्यक आहे.")
                 return redirect('bulk_upload')
 
-            # विषयांचे डेटाबेस मॉडेल तयार किंवा मिळवा
             subject_alias_map = {
                 'english': 'english',
                 'इंग्रजी': 'english',
@@ -130,7 +153,6 @@ def bulk_upload_students(request):
                 else:
                     records_updated += 1
 
-                # विषयांचे गुण नोंदवणे
                 for col, val in row.items():
                     if col in ['roll_number', 'name', 'standard', 'contact_number']:
                         continue
@@ -140,7 +162,6 @@ def bulk_upload_students(request):
                     if canonical_key and val and val.strip():
                         try:
                             marks = float(val.strip())
-                            # विषयाचे नाव ठरवा
                             subj_obj, _ = Subject.objects.get_or_create(
                                 code=canonical_key,
                                 defaults={'name': canonical_key.replace('_', ' ').title()}
@@ -167,11 +188,6 @@ def bulk_upload_students(request):
 
 @staff_member_required
 def download_sample_csv(request):
-    """
-    सर्व इयत्तांच्या निकषांनुसार सॅम्पल CSV तयार करते.
-    ५ वी ते ८ वी साठी English, Mathematics, Science
-    ९ वी व १० वी साठी English, Mathematics_1, Mathematics_2, Science_1, Science_2
-    """
     response = HttpResponse(content_type='text/csv; charset=utf-8')
     response['Content-Disposition'] = 'attachment; filename="student_marks_template.csv"'
     response.write('\ufeff'.encode('utf8'))
@@ -183,12 +199,8 @@ def download_sample_csv(request):
         'mathematics_1', 'mathematics_2', 'science_1', 'science_2'
     ]
     writer.writerow(header)
-    
-    # ५ वी चा सॅम्पल
     writer.writerow(['101', 'राहुल शर्मा (५ वी)', '5', '35', '38', '36', '', '', '', ''])
-    # ९ वी चा सॅम्पल (M1, M2, S1, S2 सह)
     writer.writerow(['201', 'अनिकेत पाटील (९ वी)', '9', '72', '', '', '32', '35', '36', '38'])
-    # १० वी चा सॅम्पल
     writer.writerow(['301', 'स्नेहल जोशी (१० वी)', '10', '75', '', '', '38', '39', '38', '37'])
     
     return response
@@ -196,20 +208,17 @@ def download_sample_csv(request):
 @staff_member_required
 def admin_analytics(request):
     """
-    नव्या निकषांनुसार सर्व शाखांमधून टॉप ५ गुणवंत व इयत्तानिहाय निकाल
+    केवळ निकाल विश्लेषण, इयत्ता व शाखानिहाय फिल्टर्स आणि CSV एक्सपोर्ट.
+    (टॉपर्स आता मुख्य निकाल पानावर हलवले आहेत)
     """
     students_qs = Student.objects.select_related('branch_group').prefetch_related('scores__subject').all()
     all_students = list(students_qs)
-    
-    # अचूक टक्केवारीनुसार टॉप ५ विद्यार्थी काढणे
     sorted_all = sorted(all_students, key=lambda s: s.percentage, reverse=True)
-    top_5_students = sorted_all[:5]
 
     branches = BranchGroup.objects.all().order_by('name')
     standards = ['5', '6', '7', '8', '9', '10']
 
     context = {
-        "top_5": top_5_students,
         "students": sorted_all,
         "branches": branches,
         "standards": standards,

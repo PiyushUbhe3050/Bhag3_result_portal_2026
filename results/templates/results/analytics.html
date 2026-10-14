@@ -11,7 +11,6 @@
         :root {
             --brand-primary: #c2410c;
             --brand-dark: #7c2d12;
-            --brand-gold: #f59e0b;
             --bg-color: #f8fafc;
         }
 
@@ -44,84 +43,6 @@
             max-height: 50px;
             width: auto;
             margin-bottom: 8px;
-        }
-
-        .carousel-title {
-            font-size: 1rem;
-            font-weight: 800;
-            color: #9a3412;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin: 0 0 8px 4px;
-        }
-
-        .topper-carousel {
-            display: flex;
-            gap: 12px;
-            overflow-x: auto;
-            padding-bottom: 8px;
-            scroll-snap-type: x mandatory;
-            -webkit-overflow-scrolling: touch;
-            scrollbar-width: none;
-        }
-        .topper-carousel::-webkit-scrollbar { display: none; }
-
-        .topper-card {
-            flex: 0 0 220px;
-            scroll-snap-align: start;
-            background: #ffffff;
-            border-radius: 16px;
-            padding: 16px 14px;
-            text-align: center;
-            border: 2px solid #e2e8f0;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
-            position: relative;
-        }
-
-        .rank-gold { border-color: #f59e0b; background: linear-gradient(180deg, #fffbeb 0%, #ffffff 100%); }
-        .rank-silver { border-color: #94a3b8; background: linear-gradient(180deg, #f8fafc 0%, #ffffff 100%); }
-        .rank-bronze { border-color: #d97706; background: linear-gradient(180deg, #fff7ed 0%, #ffffff 100%); }
-
-        .rank-badge {
-            display: inline-block;
-            font-weight: 800;
-            font-size: 0.72rem;
-            padding: 3px 10px;
-            border-radius: 20px;
-            margin-bottom: 6px;
-        }
-        .badge-gold { background: #fef3c7; color: #b45309; border: 1px solid #fcd34d; }
-        .badge-silver { background: #f1f5f9; color: #475569; border: 1px solid #cbd5e1; }
-        .badge-bronze { background: #ffedd5; color: #c2410c; border: 1px solid #fed7aa; }
-        .badge-other { background: #f3f4f6; color: #4b5563; }
-
-        .topper-name {
-            font-size: 0.95rem;
-            font-weight: 800;
-            color: #0f172a;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-
-        .topper-meta {
-            font-size: 0.75rem;
-            color: #64748b;
-            margin-bottom: 8px;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-
-        .topper-pct-badge {
-            background: #9a3412;
-            color: #ffffff;
-            font-weight: 800;
-            font-size: 1.15rem;
-            padding: 4px 10px;
-            border-radius: 8px;
-            display: inline-block;
         }
 
         .filter-mobile-box {
@@ -230,55 +151,17 @@
 
 <div class="mobile-shell">
 
-    <!-- Header -->
+    <!-- Header Section -->
     <div class="mobile-header-card">
         <img src="{% static 'results/swaroop_header.png' %}" alt="‘स्व‘-रूपवर्धिनी" class="ngo-logo-sm">
         <h4 style="margin: 0; font-weight: 800; font-size: 1.15rem; color: #7c2d12;">निकाल विश्लेषण व गुणवत्ता कक्ष</h4>
         <div style="font-size: 0.78rem; color: #b45309; font-weight: 700; margin-top: 2px;">
-            नवीन निकषांनुसार निकाल अहवाल (५ वी ते १० वी)
+            शाखा व इयत्तानिहाय निकाल अहवाल (Analytics)
         </div>
     </div>
 
-    <!-- ================= TOP 5 CAROUSEL ================= -->
-    <div class="carousel-title">
-        <span>🏆 टॉप ५ गुणवंत (All Shakhas)</span>
-        <span style="font-size: 0.72rem; color: #64748b; font-weight: 600;">डावीकडे स्वाइप करा ➔</span>
-    </div>
-
-    <div class="topper-carousel">
-        {% for topper in top_5 %}
-        <div class="topper-card {% if forloop.counter == 1 %}rank-gold{% elif forloop.counter == 2 %}rank-silver{% elif forloop.counter == 3 %}rank-bronze{% endif %}">
-            
-            {% if forloop.counter == 1 %}
-                <span class="rank-badge badge-gold">🥇 क्रमांक १ (Rank #1)</span>
-            {% elif forloop.counter == 2 %}
-                <span class="rank-badge badge-silver">🥈 क्रमांक २ (Rank #2)</span>
-            {% elif forloop.counter == 3 %}
-                <span class="rank-badge badge-bronze">🥉 क्रमांक ३ (Rank #3)</span>
-            {% else %}
-                <span class="rank-badge badge-other">🎖️ क्रमांक {{ forloop.counter }}</span>
-            {% endif %}
-
-            <div class="topper-name" title="{{ topper.name }}">{{ topper.name }}</div>
-            <div class="topper-meta">
-                <strong>इ. {{ topper.standard }} वी</strong> | {{ topper.branch_group.name }}
-            </div>
-
-            <div class="topper-pct-badge">
-                {{ topper.percentage }}%
-            </div>
-            
-            <div style="font-size: 0.72rem; color: #64748b; margin-top: 4px;">
-                एकूण: {{ topper.total_marks_obtained }}/{{ topper.total_max_marks }} ({{ topper.overall_grade }})
-            </div>
-        </div>
-        {% empty %}
-        <div style="padding: 10px; color: #64748b; font-size: 0.85rem;">कोणतीही नोंद आढळली नाही.</div>
-        {% endfor %}
-    </div>
-
-    <!-- ================= MOBILE FILTERS ================= -->
-    <div class="filter-mobile-box mt-3">
+    <!-- ================= FILTERS ================= -->
+    <div class="filter-mobile-box">
         <div class="d-flex justify-content-between align-items-center mb-2">
             <span style="font-weight: 800; font-size: 0.95rem; color: #0f172a;">⚡ जलद फिल्टर (Excel Filter)</span>
             <button onclick="resetFilters()" style="background: none; border: none; color: #c2410c; font-weight: 700; font-size: 0.78rem;">
@@ -435,7 +318,7 @@
         const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
         const link = document.createElement("a");
         link.href = URL.createObjectURL(blob);
-        link.download = `Swaroopwardhinee_Result_Report.csv`;
+        link.download = `Swaroopwardhinee_Filtered_Analytics.csv`;
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
