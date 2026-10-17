@@ -7,7 +7,7 @@
 {{ block.super }}
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Devanagari:wght@400;600;700;800&display=swap" rel="stylesheet">
 <style>
-    /* १. विस्कळीत दिसणारे मोठे Dark Mode Icons पूर्णपणे लपवा */
+    /* १. विस्कळीत डार्क मोड टॉगल आयकॉन्स पूर्णपणे लपवा */
     .theme-toggle, 
     #theme-toggle,
     button.theme-toggle,
@@ -16,25 +16,18 @@
     }
 
     body {
-        font-family: 'Noto Sans Devanagari', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
-        background-color: #f8fafc !important;
-        color: #1e293b !important;
+        font-family: 'Noto Sans Devanagari', -apple-system, sans-serif !important;
     }
 
-    /* २. स्वच्छ व आकर्षक ब्रँडेड हेडर */
+    /* २. ब्रँडेड हेडर बार */
     #header {
         background: linear-gradient(135deg, #7c2d12 0%, #c2410c 100%) !important;
         color: #ffffff !important;
-        padding: 12px 18px !important;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.12) !important;
-        display: flex !important;
-        justify-content: space-between !important;
-        align-items: center !important;
+        padding: 12px 20px !important;
     }
 
     #branding h1 {
         margin: 0 !important;
-        padding: 0 !important;
         font-size: 1.15rem !important;
         font-weight: 800 !important;
         color: #ffffff !important;
@@ -47,30 +40,11 @@
 
     #user-tools {
         font-size: 0.85rem !important;
-        font-weight: 600 !important;
         color: #fef08a !important;
-        margin: 0 !important;
-        padding: 0 !important;
     }
 
     #user-tools a {
         color: #ffffff !important;
-        text-decoration: underline !important;
-        margin-left: 6px !important;
-    }
-
-    /* ३. ब्रेडक्रम्स स्वच्छ करा */
-    div.breadcrumbs {
-        background: #ffffff !important;
-        border-bottom: 1px solid #e2e8f0 !important;
-        padding: 10px 18px !important;
-        font-size: 0.85rem !important;
-        color: #64748b !important;
-    }
-
-    div.breadcrumbs a {
-        color: #c2410c !important;
-        font-weight: 600 !important;
     }
 </style>
 {% endblock %}
@@ -82,5 +56,3 @@
     </a>
 </h1>
 {% endblock %}
-
-{% block nav-global %}{% endblock %}

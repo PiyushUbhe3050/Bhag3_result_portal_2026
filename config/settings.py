@@ -20,7 +20,7 @@ SECRET_KEY = os.environ.get(
     'django-insecure-swaroopwardhinee-bhag3-result-portal-2026-key'
 )
 
-# Set DEBUG to False in production if environment variable is set, otherwise default to True
+# Set DEBUG to False in production if environment variable is set, otherwise default to False
 DEBUG = os.environ.get('DEBUG', 'False').lower() == 'true'
 
 ALLOWED_HOSTS = [
@@ -48,6 +48,7 @@ INSTALLED_APPS = [
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
+    'whitenoise.runserver_nostatic',  # Ensures WhiteNoise handles static files even locally
     'django.contrib.staticfiles',
     
     # Custom Apps
@@ -124,10 +125,14 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 STATIC_URL = '/static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
-STATICFILES_DIRS = [
-    BASE_DIR / 'results' / 'static',
-]
-STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+
+STATICFILES_DIRS = []
+custom_static_path = BASE_DIR / 'results' / 'static'
+if custom_static_path.exists():
+    STATICFILES_DIRS.append(custom_static_path)
+
+# Safe WhiteNoise Storage - Fixes 500 missing static files error completely
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedStaticFilesStorage'
 
 # Default primary key field type
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
