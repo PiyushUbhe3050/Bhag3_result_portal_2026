@@ -1,5 +1,6 @@
 ﻿import io
 import csv
+import json
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.admin.views.decorators import staff_member_required
 from django.views.decorators.csrf import csrf_exempt
@@ -12,17 +13,14 @@ def search_result(request):
     branches = BranchGroup.objects.all().order_by('name')
     error = None
 
-    # इयत्ता ५ वी ते १० वी मधील प्रत्येक इयत्तेचा १ अव्वल विद्यार्थी (Top 6 Toppers)
     standard_list = ['5', '6', '7', '8', '9', '10']
     standard_toppers = []
 
-    # कार्यक्षमता सुधारण्यासाठी सर्व विद्यार्थी एकाच क्वेरीमध्ये आणणे
     all_students = list(Student.objects.select_related('branch_group').prefetch_related('scores__subject').all())
 
     for std in standard_list:
         std_students = [s for s in all_students if str(s.standard).strip() == std and s.scores.exists()]
         if std_students:
-            # टक्केवारीनुसार उतरत्या क्रमाने लावून प्रथम क्रमांकाचा विद्यार्थी निवडणे
             top_student = max(std_students, key=lambda s: s.percentage)
             standard_toppers.append({
                 'standard': std,
@@ -34,7 +32,6 @@ def search_result(request):
                 'student': None
             })
 
-    # निकाल शोधणे (POST किंवा GET)
     branch_id = request.GET.get("branch_group", "").strip() or request.POST.get("branch_group", "").strip()
     roll_number = request.GET.get("roll_number", "").strip() or request.POST.get("roll_number", "").strip()
     name = request.GET.get("name", "").strip() or request.POST.get("name", "").strip()
@@ -207,10 +204,6 @@ def download_sample_csv(request):
 
 @staff_member_required
 def admin_analytics(request):
-    """
-    केवळ निकाल विश्लेषण, इयत्ता व शाखानिहाय फिल्टर्स आणि CSV एक्सपोर्ट.
-    (टॉपर्स आता मुख्य निकाल पानावर हलवले आहेत)
-    """
     students_qs = Student.objects.select_related('branch_group').prefetch_related('scores__subject').all()
     all_students = list(students_qs)
     sorted_all = sorted(all_students, key=lambda s: s.percentage, reverse=True)
@@ -218,10 +211,86 @@ def admin_analytics(request):
     branches = BranchGroup.objects.all().order_by('name')
     standards = ['5', '6', '7', '8', '9', '10']
 
+    # --- आलेख डेटा निर्मिती (Chart Data Calculation) ---
+    chart_payload = {
+        "branches": [b.name for b in branches],
+        "standards": standards,
+        "branch_standard_avg": {},  # Shakha -> Standard -> avg_percentage
+        "branch_subject_avg": {},   # Shakha -> Standard -> Subject -> avg_marks
+        "global_standard_avg": {},  # All Shakhas combined -> Standard -> avg_percentage
+        "global_subject_avg": {},   # All Shakhas combined -> Standard -> Subject -> avg_marks
+    }
+
+    # प्राथमिक डेटा स्ट्रक्चर तयार करणे
+    for b_name in chart_payload["branches"]:
+        chart_payload["branch_standard_avg"][b_name] = {std: 0.0 for std in standards}
+        chart_payload["branch_subject_avg"][b_name] = {std: {} for std in standards}
+
+    for std in standards:
+        chart_payload["global_standard_avg"][std] = 0.0
+        chart_payload["global_subject_avg"][std] = {}
+
+    # १. शाखानिहाय व इयत्तानिहाय विद्यार्थी गोळा करणे
+    branch_std_students = {b_name: {std: [] for std in standards} for b_name in chart_payload["branches"]}
+    global_std_students = {std: [] for std in standards}
+
+    for s in all_students:
+        std = str(s.standard).strip()
+        b_name = s.branch_group.name if s.branch_group else None
+        if std in standards:
+            global_std_students[std].append(s)
+            if b_name and b_name in branch_std_students:
+                branch_std_students[b_name][std].append(s)
+
+    # २. इयत्तानिहाय सरासरी टक्केवारी मोजणे (पाय चार्ट व तुलनात्मक आलेख)
+    for std in standards:
+        g_list = global_std_students[std]
+        if g_list:
+            chart_payload["global_standard_avg"][std] = round(sum(s.percentage for s in g_list) / len(g_list), 2)
+
+        for b_name in chart_payload["branches"]:
+            b_list = branch_std_students[b_name][std]
+            if b_list:
+                chart_payload["branch_standard_avg"][b_name][std] = round(sum(s.percentage for s in b_list) / len(b_list), 2)
+
+    # ३. इयत्तानिहाय व विषयानुरूप सरासरी गुण मोजणे (बार आलेख २)
+    subject_keys_std_5_8 = ['english', 'mathematics', 'science']
+    subject_keys_std_9_10 = ['english', 'mathematics_1', 'mathematics_2', 'science_1', 'science_2']
+
+    def calculate_subject_avg(students_list, std):
+        target_keys = subject_keys_std_9_10 if std in ['9', '10'] else subject_keys_std_5_8
+        subj_totals = {k: 0.0 for k in target_keys}
+        subj_counts = {k: 0 for k in target_keys}
+
+        for st in students_list:
+            for sc in st.scores.all():
+                code = (sc.subject.code or "").lower()
+                name = sc.subject.name.lower()
+                # alias मॅपिंग
+                matched_key = None
+                for tk in target_keys:
+                    if tk in code or code in tk or tk in name or name in tk:
+                        matched_key = tk
+                        break
+                if matched_key:
+                    subj_totals[matched_key] += sc.marks_obtained
+                    subj_counts[matched_key] += 1
+
+        result = {}
+        for k in target_keys:
+            result[k] = round(subj_totals[k] / subj_counts[k], 2) if subj_counts[k] > 0 else 0.0
+        return result
+
+    for std in standards:
+        chart_payload["global_subject_avg"][std] = calculate_subject_avg(global_std_students[std], std)
+        for b_name in chart_payload["branches"]:
+            chart_payload["branch_subject_avg"][b_name][std] = calculate_subject_avg(branch_std_students[b_name][std], std)
+
     context = {
         "students": sorted_all,
         "branches": branches,
         "standards": standards,
         "total_count": len(all_students),
+        "chart_payload_json": json.dumps(chart_payload),
     }
     return render(request, "results/analytics.html", context)

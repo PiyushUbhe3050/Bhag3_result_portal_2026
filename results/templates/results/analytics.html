@@ -4,13 +4,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>‘स्व‘-रूपवर्धिनी - निकाल विश्लेषण (Analytics)</title>
+    <title>‘स्व‘-रूपवर्धिनी - निकाल विश्लेषण व आलेख</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Devanagari:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Chart.js CDN for Visual Interactive Charts -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
     <style>
         :root {
             --brand-primary: #c2410c;
             --brand-dark: #7c2d12;
+            --brand-gold: #f59e0b;
             --bg-color: #f8fafc;
         }
 
@@ -24,7 +27,7 @@
         }
 
         .mobile-shell {
-            max-width: 480px;
+            max-width: 520px;
             margin: 0 auto;
             padding: 12px 12px 90px 12px;
         }
@@ -45,6 +48,51 @@
             margin-bottom: 8px;
         }
 
+        /* Chart Card Containers */
+        .chart-box {
+            background: #ffffff;
+            border-radius: 16px;
+            border: 1px solid #cbd5e1;
+            padding: 16px 14px;
+            margin-bottom: 18px;
+            box-shadow: 0 3px 8px rgba(0, 0, 0, 0.03);
+        }
+
+        .chart-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 12px;
+            border-bottom: 2px solid #f1f5f9;
+            padding-bottom: 8px;
+        }
+
+        .chart-title {
+            font-size: 0.98rem;
+            font-weight: 800;
+            color: #9a3412;
+            margin: 0;
+        }
+
+        .chart-filter-select {
+            padding: 6px 10px;
+            border-radius: 8px;
+            border: 1.5px solid #cbd5e1;
+            font-size: 0.82rem;
+            font-weight: 700;
+            background-color: #fffbeb;
+            color: #92400e;
+        }
+
+        .chart-container-inner {
+            position: relative;
+            width: 100%;
+            min-height: 260px;
+        }
+
+        /* Filter Section */
         .filter-mobile-box {
             background: #ffffff;
             border-radius: 16px;
@@ -78,6 +126,7 @@
             outline: none;
         }
 
+        /* Student Result Cards */
         .student-result-card {
             background: #ffffff;
             border-radius: 14px;
@@ -97,6 +146,7 @@
         .status-pass { background: #dcfce7; color: #15803d; }
         .status-fail { background: #fee2e2; color: #b91c1c; }
 
+        /* Floating Bottom Action Bar */
         .bottom-action-bar {
             position: fixed;
             bottom: 0;
@@ -112,7 +162,7 @@
         }
 
         .bottom-inner {
-            max-width: 480px;
+            max-width: 520px;
             width: 100%;
             display: flex;
             gap: 10px;
@@ -154,16 +204,68 @@
     <!-- Header Section -->
     <div class="mobile-header-card">
         <img src="{% static 'results/swaroop_header.png' %}" alt="‘स्व‘-रूपवर्धिनी" class="ngo-logo-sm">
-        <h4 style="margin: 0; font-weight: 800; font-size: 1.15rem; color: #7c2d12;">निकाल विश्लेषण व गुणवत्ता कक्ष</h4>
+        <h4 style="margin: 0; font-weight: 800; font-size: 1.15rem; color: #7c2d12;">निकाल विश्लेषण व गुणवत्ता आलेख</h4>
         <div style="font-size: 0.78rem; color: #b45309; font-weight: 700; margin-top: 2px;">
-            शाखा व इयत्तानिहाय निकाल अहवाल (Analytics)
+            भाग - ३ : इयत्तानिहाय सरासरी व शाखा तुलनात्मक विश्लेषण
         </div>
     </div>
 
-    <!-- ================= FILTERS ================= -->
-    <div class="filter-mobile-box">
+    <!-- ================= आलेख १: इयत्तानिहाय सरासरी टक्केवारी (Pie / Doughnut Chart) ================= -->
+    <div class="chart-box">
+        <div class="chart-header">
+            <h6 class="chart-title">🥧 १. इयत्तानिहाय सरासरी टक्केवारी (Pie Chart)</h6>
+            <select id="pieShakhaFilter" class="chart-filter-select" onchange="updatePieChart()">
+                <option value="ALL">सर्व शाखा एकत्रित</option>
+                {% for b in branches %}
+                <option value="{{ b.name }}">{{ b.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="chart-container-inner" style="height: 280px;">
+            <canvas id="standardPieChart"></canvas>
+        </div>
+        <div class="text-center text-muted mt-2" style="font-size: 0.72rem;">
+            * ५ वी ते १० वी मधील सरासरी गुणांची टक्केवारी दर्शवणारा आलेख.
+        </div>
+    </div>
+
+    <!-- ================= आलेख २: इयत्तानिहाय विषयानुरूप सरासरी गुण (Subject-wise Bar Chart) ================= -->
+    <div class="chart-box">
+        <div class="chart-header">
+            <h6 class="chart-title">📊 २. इयत्ताश: विषयानुरूप सरासरी गुण (Bar Chart)</h6>
+            <select id="barSubjectShakhaFilter" class="chart-filter-select" onchange="updateSubjectBarChart()">
+                <option value="ALL">सर्व शाखा एकत्रित</option>
+                {% for b in branches %}
+                <option value="{{ b.name }}">{{ b.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="chart-container-inner" style="height: 320px;">
+            <canvas id="subjectBarChart"></canvas>
+        </div>
+        <div class="text-center text-muted mt-2" style="font-size: 0.72rem;">
+            * ५ वी ते ८ वी: ३ विषय (Eng, Math, Sci) | ९ वी व १० वी: ५ विषय (Eng, M1, M2, S1, S2)
+        </div>
+    </div>
+
+    <!-- ================= आलेख ३: भाग ३ - सर्व शाखा (इयत्ताश: २४ बार्स तुलनात्मक आलेख) ================= -->
+    <div class="chart-box">
+        <div class="chart-header">
+            <h6 class="chart-title">🏛️ ३. भाग ३ - सर्व शाखा (इयत्ताश: २४ Bars Average)</h6>
+            <span class="badge bg-danger" style="font-size: 0.72rem;">तुलनात्मक अहवाल</span>
+        </div>
+        <div class="chart-container-inner" style="height: 330px;">
+            <canvas id="allBranchesComparisonChart"></canvas>
+        </div>
+        <div class="text-center text-muted mt-2" style="font-size: 0.72rem;">
+            * ४ शाखा गट × ६ इयत्ता (५ वी ते १० वी) = २४ बार्स तुलनात्मक टक्केवारी.
+        </div>
+    </div>
+
+    <!-- ================= EXCEL-STYLE INTERACTIVE FILTERS ================= -->
+    <div class="filter-mobile-box mt-3">
         <div class="d-flex justify-content-between align-items-center mb-2">
-            <span style="font-weight: 800; font-size: 0.95rem; color: #0f172a;">⚡ जलद फिल्टर (Excel Filter)</span>
+            <span style="font-weight: 800; font-size: 0.95rem; color: #0f172a;">⚡ एक्सेल निकाल फिल्टर (Excel Filter)</span>
             <button onclick="resetFilters()" style="background: none; border: none; color: #c2410c; font-weight: 700; font-size: 0.78rem;">
                 🔄 रिसेट
             </button>
@@ -256,7 +358,198 @@
     </div>
 </div>
 
+<!-- ================= JAVASCRIPT CHARTS & FILTERS ENGINE ================= -->
 <script>
+    // बॅकएंडकडून आलेला कॅल्क्युलेटेड JSON डेटा
+    const chartData = {{ chart_payload_json|safe }};
+    const standards = chartData.standards; // ['5', '6', '7', '8', '9', '10']
+    const standardLabels = ['५ वी', '६ वी', '७ वी', '८ वी', '९ वी', '१० वी'];
+
+    let pieChartInstance = null;
+    let subjectBarChartInstance = null;
+    let allBranchesChartInstance = null;
+
+    // --- १. इयत्तानिहाय सरासरी टक्केवारी (Pie Chart) ---
+    function initPieChart() {
+        const ctx = document.getElementById('standardPieChart').getContext('2d');
+        pieChartInstance = new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: standardLabels,
+                datasets: [{
+                    data: [0, 0, 0, 0, 0, 0],
+                    backgroundColor: [
+                        '#f59e0b', '#3b82f6', '#10b981', '#8b5cf6', '#ec4899', '#f97316'
+                    ],
+                    borderWidth: 2,
+                    borderColor: '#ffffff'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 11, family: 'Noto Sans Devanagari' } } },
+                    tooltip: {
+                        callbacks: {
+                            label: function(ctx) { return `${ctx.label}: सरासरी ${ctx.raw}%`; }
+                        }
+                    }
+                }
+            }
+        });
+        updatePieChart();
+    }
+
+    function updatePieChart() {
+        const selectedBranch = document.getElementById('pieShakhaFilter').value;
+        let avgData = [];
+
+        if (selectedBranch === 'ALL') {
+            avgData = standards.map(std => chartData.global_standard_avg[std] || 0);
+        } else {
+            const branchMap = chartData.branch_standard_avg[selectedBranch] || {};
+            avgData = standards.map(std => branchMap[std] || 0);
+        }
+
+        pieChartInstance.data.datasets[0].data = avgData;
+        pieChartInstance.update();
+    }
+
+    // --- २. इयत्तानिहाय विषयानुरूप सरासरी गुण (Multi-Bar Chart) ---
+    function initSubjectBarChart() {
+        const ctx = document.getElementById('subjectBarChart').getContext('2d');
+        subjectBarChartInstance = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: standardLabels,
+                datasets: [
+                    { label: 'इंग्रजी (English)', data: [], backgroundColor: '#3b82f6' },
+                    { label: 'गणित / M1', data: [], backgroundColor: '#10b981' },
+                    { label: 'गणित २ (M2)', data: [], backgroundColor: '#059669' },
+                    { label: 'विज्ञान / S1', data: [], backgroundColor: '#f59e0b' },
+                    { label: 'विज्ञान २ (S2)', data: [], backgroundColor: '#d97706' },
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        title: { display: true, text: 'सरासरी गुण (Marks)', font: { size: 11 } }
+                    },
+                    x: {
+                        ticks: { font: { family: 'Noto Sans Devanagari', weight: 'bold' } }
+                    }
+                },
+                plugins: {
+                    legend: { position: 'bottom', labels: { boxWidth: 10, font: { size: 10, family: 'Noto Sans Devanagari' } } }
+                }
+            }
+        });
+        updateSubjectBarChart();
+    }
+
+    function updateSubjectBarChart() {
+        const selectedBranch = document.getElementById('barSubjectShakhaFilter').value;
+        const sourceMap = (selectedBranch === 'ALL') ? chartData.global_subject_avg : chartData.branch_subject_avg[selectedBranch];
+
+        const engData = [];
+        const m1Data = [];
+        const m2Data = [];
+        const s1Data = [];
+        const s2Data = [];
+
+        standards.forEach(std => {
+            const stdData = (sourceMap && sourceMap[std]) ? sourceMap[std] : {};
+            engData.push(stdData['english'] || 0);
+
+            if (std === '9' || std === '10') {
+                m1Data.push(stdData['mathematics_1'] || 0);
+                m2Data.push(stdData['mathematics_2'] || 0);
+                s1Data.push(stdData['science_1'] || 0);
+                s2Data.push(stdData['science_2'] || 0);
+            } else {
+                m1Data.push(stdData['mathematics'] || 0);
+                m2Data.push(0); // ५ वी ते ८ वी साठी M2 नाही
+                s1Data.push(stdData['science'] || 0);
+                s2Data.push(0); // ५ वी ते ८ वी साठी S2 नाही
+            }
+        });
+
+        subjectBarChartInstance.data.datasets[0].data = engData;
+        subjectBarChartInstance.data.datasets[1].data = m1Data;
+        subjectBarChartInstance.data.datasets[2].data = m2Data;
+        subjectBarChartInstance.data.datasets[3].data = s1Data;
+        subjectBarChartInstance.data.datasets[4].data = s2Data;
+        subjectBarChartInstance.update();
+    }
+
+    // --- ३. भाग ३ - सर्व शाखा (इयत्ताश: २४ बार्स तुलनात्मक आलेख) ---
+    function initAllBranchesChart() {
+        const ctx = document.getElementById('allBranchesComparisonChart').getContext('2d');
+        const branches = chartData.branches;
+
+        const stdColors = [
+            '#f59e0b', '#3b82f6', '#10b981', '#8b5cf6', '#ec4899', '#f97316'
+        ];
+
+        // ६ इयत्तांसाठी ६ डेटासेट्स (प्रत्येक शाखेत ६ बार्स = २४ बार्स)
+        const datasets = standards.map((std, idx) => {
+            return {
+                label: `इ. ${std} वी`,
+                data: branches.map(bName => {
+                    return (chartData.branch_standard_avg[bName] && chartData.branch_standard_avg[bName][std]) 
+                           ? chartData.branch_standard_avg[bName][std] : 0;
+                }),
+                backgroundColor: stdColors[idx],
+                borderRadius: 4
+            };
+        });
+
+        // संक्षिप्त शाखा नावे (X-Axis वर नीट दिसण्यासाठी)
+        const branchShortLabels = branches.map(b => b.replace('शाखा', '').trim());
+
+        allBranchesChartInstance = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: branchShortLabels,
+                datasets: datasets
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        max: 100,
+                        title: { display: true, text: 'सरासरी टक्केवारी (%)', font: { size: 11 } }
+                    },
+                    x: {
+                        ticks: { font: { family: 'Noto Sans Devanagari', size: 10, weight: 'bold' } }
+                    }
+                },
+                plugins: {
+                    legend: { position: 'bottom', labels: { boxWidth: 10, font: { size: 10, family: 'Noto Sans Devanagari' } } },
+                    tooltip: {
+                        callbacks: {
+                            label: function(ctx) { return `${ctx.dataset.label}: सरासरी ${ctx.raw}%`; }
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    // डोम लोड झाल्यावर सर्व ३ चार्ट्स सुरू करणे
+    document.addEventListener('DOMContentLoaded', function() {
+        initPieChart();
+        initSubjectBarChart();
+        initAllBranchesChart();
+    });
+
+    // --- एक्सेल निकाल फिल्टर्स लॉजिक ---
     function applyFilters() {
         const branchVal = document.getElementById('branchFilter').value;
         const standardVal = document.getElementById('standardFilter').value;
@@ -318,7 +611,7 @@
         const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
         const link = document.createElement("a");
         link.href = URL.createObjectURL(blob);
-        link.download = `Swaroopwardhinee_Filtered_Analytics.csv`;
+        link.download = `Swaroopwardhinee_Result_Report.csv`;
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
